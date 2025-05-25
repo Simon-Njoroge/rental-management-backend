@@ -1,0 +1,2 @@
+[2025-05-25 04:51:28.679 PM] [32minfo[39m: 	[32mServer running on port 3000[39m
+[2025-05-25 04:51:33.550 PM] [31merror[39m: 	[31mDatabase connection failed getaddrinfo EAI_AGAIN postgres[39m
