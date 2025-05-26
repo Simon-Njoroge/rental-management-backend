@@ -3,26 +3,26 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  ManyToOne
-} from 'typeorm';
-import { User } from './user.entity';
-import { Property } from './property.entity';
+  ManyToOne,
+} from "typeorm";
+import { User } from "./user.entity";
+import { Property } from "./property.entity";
 
 @Entity()
 export class Review {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column('int')
+  @Column("int")
   rating!: number;
 
-  @Column('text')
+  @Column("text")
   comment!: string;
 
-  @ManyToOne(() => User, user => user.reviews)
+  @ManyToOne(() => User, (user) => user.reviews)
   user!: User;
 
-  @ManyToOne(() => Property, property => property.reviews)
+  @ManyToOne(() => Property, (property) => property.reviews)
   property!: Property;
 
   @CreateDateColumn()

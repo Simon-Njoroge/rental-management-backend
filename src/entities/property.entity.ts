@@ -7,59 +7,59 @@ import {
   ManyToOne,
   OneToMany,
   ManyToMany,
-  JoinTable
-} from 'typeorm';
-import { User } from './user.entity';
-import { Booking } from './booking.entity';
-import { Amenity } from './amenity.entity';
-import { Review } from './review.entity';
-import type { Maintenance } from './maintenance.entity';
+  JoinTable,
+} from "typeorm";
+import { User } from "./user.entity";
+import { Booking } from "./booking.entity";
+import { Amenity } from "./amenity.entity";
+import { Review } from "./review.entity";
+import type { Maintenance } from "./maintenance.entity";
 
 export enum PropertyType {
-  APARTMENT = 'apartment',
-  HOUSE = 'house',
-  VILLA = 'villa',
-  CONDO = 'condominium',
-  TOWNHOUSE = 'townhouse',
-  STUDIO = 'studio'
+  APARTMENT = "apartment",
+  HOUSE = "house",
+  VILLA = "villa",
+  CONDO = "condominium",
+  TOWNHOUSE = "townhouse",
+  STUDIO = "studio",
 }
 
 @Entity()
 export class Property {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
   @Column()
   title!: string;
 
-  @Column('text')
+  @Column("text")
   description!: string;
 
   @Column()
   address!: string;
 
-  @Column('decimal', { precision: 12, scale: 2 })
+  @Column("decimal", { precision: 12, scale: 2 })
   price!: number;
 
-  @Column('decimal', { precision: 10, scale: 6, nullable: true })
+  @Column("decimal", { precision: 10, scale: 6, nullable: true })
   latitude!: number;
 
-  @Column('decimal', { precision: 10, scale: 6, nullable: true })
+  @Column("decimal", { precision: 10, scale: 6, nullable: true })
   longitude!: number;
 
-  @Column('int')
+  @Column("int")
   bedrooms!: number;
 
-  @Column('int')
+  @Column("int")
   bathrooms!: number;
 
-  @Column('int')
+  @Column("int")
   squareMeters!: number;
 
-  @Column({ type: 'enum', enum: PropertyType })
+  @Column({ type: "enum", enum: PropertyType })
   type!: PropertyType;
 
-  @Column('simple-array')
+  @Column("simple-array")
   images!: string[];
 
   @Column({ default: true })
@@ -68,16 +68,16 @@ export class Property {
   @Column({ default: false })
   isFeatured!: boolean;
 
-  @ManyToOne(() => User, user => user.properties)
+  @ManyToOne(() => User, (user) => user.properties)
   agent!: User;
 
-  @OneToMany(() => Booking, booking => booking.property)
+  @OneToMany(() => Booking, (booking) => booking.property)
   bookings!: Booking[];
 
-  @OneToMany(() => Review, review => review.property)
+  @OneToMany(() => Review, (review) => review.property)
   reviews!: Review[];
 
-  @OneToMany('Maintenance', 'property') 
+  @OneToMany("Maintenance", "property")
   maintenanceRequests!: Maintenance[];
 
   @ManyToMany(() => Amenity)

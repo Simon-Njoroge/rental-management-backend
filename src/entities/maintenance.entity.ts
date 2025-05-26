@@ -4,49 +4,57 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne
-} from 'typeorm';
-import { User } from './user.entity';
-import { Property } from './property.entity';
+  ManyToOne,
+} from "typeorm";
+import { User } from "./user.entity";
+import { Property } from "./property.entity";
 
 export enum MaintenanceStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
 }
 
 export enum MaintenancePriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  EMERGENCY = 'emergency'
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  EMERGENCY = "emergency",
 }
 
 @Entity()
 export class Maintenance {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
   @Column()
   title!: string;
 
-  @Column('text')
+  @Column("text")
   description!: string;
 
-  @Column({ type: 'enum', enum: MaintenanceStatus, default: MaintenanceStatus.PENDING })
+  @Column({
+    type: "enum",
+    enum: MaintenanceStatus,
+    default: MaintenanceStatus.PENDING,
+  })
   status!: MaintenanceStatus;
 
-  @Column({ type: 'enum', enum: MaintenancePriority, default: MaintenancePriority.MEDIUM })
+  @Column({
+    type: "enum",
+    enum: MaintenancePriority,
+    default: MaintenancePriority.MEDIUM,
+  })
   priority!: MaintenancePriority;
 
-  @Column({ nullable: true })
-  resolutionNotes!: string | null;
+  @Column({ type: "jsonb", nullable: true }) 
+  resolutionNotes!: object | null;
 
-  @ManyToOne(() => User, user => user.maintenanceRequests)
+  @ManyToOne(() => User, (user) => user.maintenanceRequests)
   user!: User;
 
-  @ManyToOne(() => Property, property => property.maintenanceRequests)
+  @ManyToOne(() => Property, (property) => property.maintenanceRequests)
   property!: Property;
 
   @CreateDateColumn()

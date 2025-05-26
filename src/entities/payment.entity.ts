@@ -5,31 +5,31 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  OneToOne
-} from 'typeorm';
-import { Booking } from './booking.entity';
-import { Invoice } from './invoice.entity';
+  OneToOne,
+} from "typeorm";
+import { Booking } from "./booking.entity";
+import { Invoice } from "./invoice.entity";
 
 export enum PaymentMethod {
-  MPESA = 'mpesa',
-  STRIPE = 'stripe',
-  BANK_TRANSFER = 'bank_transfer',
-  CASH = 'cash'
+  MPESA = "mpesa",
+  STRIPE = "stripe",
+  BANK_TRANSFER = "bank_transfer",
+  CASH = "cash",
 }
 
 export enum PaymentStatus {
-  PENDING = 'pending',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  REFUNDED = 'refunded'
+  PENDING = "pending",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  REFUNDED = "refunded",
 }
 
 @Entity()
 export class Payment {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column('decimal', { precision: 12, scale: 2 })
+  @Column("decimal", { precision: 12, scale: 2 })
   amount!: number;
 
   @Column()
@@ -38,19 +38,19 @@ export class Payment {
   @Column({ unique: true })
   reference!: string;
 
-  @Column({ type: 'enum', enum: PaymentMethod })
+  @Column({ type: "enum", enum: PaymentMethod })
   method!: PaymentMethod;
 
-  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
+  @Column({ type: "enum", enum: PaymentStatus, default: PaymentStatus.PENDING })
   status!: PaymentStatus;
 
   @Column({ nullable: true })
   paymentDetails!: string;
 
-  @ManyToOne(() => Booking, booking => booking.payments)
+  @ManyToOne(() => Booking, (booking) => booking.payments)
   booking!: Booking;
 
-  @OneToOne(() => Invoice, invoice => invoice.payment)
+  @OneToOne(() => Invoice, (invoice) => invoice.payment)
   invoice!: Invoice;
 
   @CreateDateColumn()

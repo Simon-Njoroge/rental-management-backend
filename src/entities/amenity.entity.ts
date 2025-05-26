@@ -1,14 +1,9 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany
-} from 'typeorm';
-import { Property } from './property.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from "typeorm";
+import { Property } from "./property.entity";
 
 @Entity()
 export class Amenity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
   @Column({ unique: true })
@@ -17,6 +12,6 @@ export class Amenity {
   @Column({ nullable: true })
   icon!: string;
 
-  @ManyToMany(() => Property, property => property.amenities)
+  @ManyToMany(() => Property, (property) => property.amenities)
   properties!: Property[];
 }

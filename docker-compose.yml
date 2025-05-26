@@ -5,16 +5,15 @@ services:
     image: postgres:13-alpine
     container_name: rental_postgres
     environment:
-      - NODE_ENV=development
+     POSTGRES_USER: postgres
+     POSTGRES_PASSWORD: postgres
+     POSTGRES_DB: rental_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - rental_network
-
-    env_file:
-      - .env
 
   redis:
     image: redis:6-alpine
@@ -36,6 +35,10 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - .env
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules

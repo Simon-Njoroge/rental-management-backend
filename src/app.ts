@@ -1,9 +1,9 @@
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
-import rateLimit from 'express-rate-limit';
-import { AppDataSource } from './config/data-source';
-import logger from './utils/logger';
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
+import { AppDataSource } from "./config/data-source";
+import logger from "./utils/logger";
 
 class App {
   public app: express.Application;
@@ -21,16 +21,18 @@ class App {
 
   private initializeMiddlewares() {
     this.app.use(helmet());
-    this.app.use(cors({
-      origin: process.env.FRONTEND_URL
-    }));
+    this.app.use(
+      cors({
+        origin: process.env.FRONTEND_URL,
+      }),
+    );
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
     // Rate limiting
     const limiter = rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100 // limit each IP to 100 requests per windowMs
+      max: 100, // limit each IP to 100 requests per windowMs
     });
     this.app.use(limiter);
   }
@@ -38,16 +40,16 @@ class App {
   private async initializeDatabase() {
     try {
       await AppDataSource.initialize();
-      logger.info('Database connected successfully');
+      logger.info("Database connected successfully");
     } catch (error) {
-      logger.error('Database connection failed', error);
+      logger.error("Database connection failed", error);
       process.exit(1);
     }
   }
 
   private initializeControllers(controllers: any[]) {
     controllers.forEach((controller) => {
-      this.app.use('/api', controller.router);
+      this.app.use("/api", controller.router);
     });
   }
 
@@ -55,7 +57,7 @@ class App {
     this.app.use((req, res) => {
       res.status(404).json({
         success: false,
-        message: 'Endpoint not found'
+        message: "Endpoint not found",
       });
     });
 
@@ -63,7 +65,7 @@ class App {
       logger.error(error.stack);
       res.status(500).json({
         success: false,
-        message: 'Internal server error'
+        message: "Internal server error",
       });
     });
   }

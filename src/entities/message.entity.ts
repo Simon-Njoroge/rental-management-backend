@@ -3,16 +3,16 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  ManyToOne
-} from 'typeorm';
-import { User } from './user.entity';
+  ManyToOne,
+} from "typeorm";
+import { User } from "./user.entity";
 
 @Entity()
 export class Message {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column('text')
+  @Column("text")
   content!: string;
 
   @Column({ default: false })
@@ -21,10 +21,10 @@ export class Message {
   @Column({ default: false })
   isRead!: boolean;
 
-  @ManyToOne(() => User, user => user.messagesSent)
+  @ManyToOne(() => User, (user) => user.messagesSent)
   sender!: User;
 
-  @ManyToOne(() => User, user => user.messagesReceived)
+  @ManyToOne(() => User, (user) => user.messagesReceived)
   receiver!: User;
 
   @CreateDateColumn()
