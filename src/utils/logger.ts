@@ -3,7 +3,7 @@ import DailyRotateFile from "winston-daily-rotate-file";
 
 const { combine, timestamp, printf, colorize, align } = winston.format;
 
-const logger = winston.createLogger({
+export const Logger: winston.Logger = winston.createLogger({
   level: process.env.LOG_LEVEL || "info",
   format: combine(
     colorize({ all: true }),
@@ -24,5 +24,3 @@ const logger = winston.createLogger({
     }),
   ],
 });
-
-export default logger;

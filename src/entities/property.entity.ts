@@ -68,6 +68,9 @@ export class Property {
   @Column({ default: false })
   isFeatured!: boolean;
 
+  @Column('float', { default: 0 })
+  rating!: number;
+
   @ManyToOne(() => User, (user) => user.properties)
   agent!: User;
 

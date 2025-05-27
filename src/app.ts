@@ -3,7 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { AppDataSource } from "./config/data-source";
-import logger from "./utils/logger";
+import { Logger } from "./utils/logger";
 
 class App {
   public app: express.Application;
@@ -40,9 +40,9 @@ class App {
   private async initializeDatabase() {
     try {
       await AppDataSource.initialize();
-      logger.info("Database connected successfully");
+      Logger.info("Database connected successfully");
     } catch (error) {
-      logger.error("Database connection failed", error);
+      Logger.error("Database connection failed", error);
       process.exit(1);
     }
   }
@@ -62,7 +62,7 @@ class App {
     });
 
     this.app.use((error: any, req: any, res: any, next: any) => {
-      logger.error(error.stack);
+      Logger.error(error.stack);
       res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -70,11 +70,14 @@ class App {
     });
   }
 
+
   public listen() {
     this.app.listen(this.port, () => {
-      logger.info(`Server running on port ${this.port}`);
+      Logger.info(`Server running on port ${this.port}`);
     });
   }
+
+  
 }
 
 export default App;

@@ -2,7 +2,7 @@ import "reflect-metadata";
 import dotenv from "dotenv";
 import App from "./app";
 // import AuthController from './controllers/auth.controller';
-import logger from "./utils/logger";
+import { Logger } from "./utils/logger";
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ dotenv.config();
     );
     app.listen();
   } catch (error) {
-    logger.error("Failed to start server", error);
+    Logger.error("Failed to start server", error);
     process.exit(1);
   }
 })();
