@@ -1,6 +1,12 @@
-
-import { IsEnum, IsDateString, IsOptional, IsString, IsUUID, IsNumber } from 'class-validator';
-import { BookingStatus } from '../../entities/booking.entity';
+import {
+  IsEnum,
+  IsDateString,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsNumber,
+} from "class-validator";
+import { BookingStatus } from "../../entities/booking.entity";
 
 export class CreateBookingDto {
   @IsDateString()

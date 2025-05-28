@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Invoice, InvoiceStatus } from '../entities/invoice.entity';
-import { Booking } from '../entities/booking.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable } from "@nestjs/common";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Invoice, InvoiceStatus } from "../entities/invoice.entity";
+import { Booking } from "../entities/booking.entity";
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class InvoiceService {
@@ -30,7 +30,7 @@ export class InvoiceService {
       dueDate,
       status: InvoiceStatus.PENDING,
       booking,
-      notes: 'Monthly rent invoice',
+      notes: "Monthly rent invoice",
     });
 
     return this.invoiceRepository.save(invoice);
@@ -61,7 +61,7 @@ export class InvoiceService {
         dueDate,
         status: InvoiceStatus.PENDING,
         booking,
-        notes: 'Monthly rent invoice',
+        notes: "Monthly rent invoice",
       });
 
       invoices.push(await this.invoiceRepository.save(invoice));

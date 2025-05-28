@@ -1,37 +1,37 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
-import { UserRole } from '../../entities/user.entity';
+// create-user.dto.ts
+import { IsString, IsEmail, IsOptional, IsBoolean } from "class-validator";
 
 export class CreateUserDto {
-  @IsNotEmpty()
-  @IsString()
-  fullName!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  nationalId!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  username!: string;
-
-  @IsNotEmpty()
   @IsEmail()
   email!: string;
 
-  @IsNotEmpty()
   @IsString()
-  phoneNumber!: string;
+  fullName!: string;
 
-  @IsNotEmpty()
   @IsString()
-  location!: string;
+  password!: string;
 
   @IsOptional()
   @IsString()
-  @Length(6)
-  password?: string;
+  nationalId?: string;
 
   @IsOptional()
-  @IsEnum(UserRole)
-  role?: UserRole;
+  @IsString()
+  username?: string;
+
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isVerified?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  fromGoogle?: boolean; 
 }

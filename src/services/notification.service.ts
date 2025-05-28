@@ -1,13 +1,16 @@
-
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Notification } from '../entities/notification.entity';
-import { User } from '../entities/user.entity';
-import { EmailService } from '../utils/email/email.service';
-import { SmsService } from '../utils/sms/sms.service';
-import { UserService } from './user.service'; 
-import { NotificationType } from '../entities/notification.entity';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Notification } from "../entities/notification.entity";
+import { User } from "../entities/user.entity";
+import { EmailService } from "../utils/email/email.service";
+import { SmsService } from "../utils/sms/sms.service";
+import { UserService } from "./user.service";
+import { NotificationType } from "../entities/notification.entity";
 
 @Injectable()
 export class NotificationService {
@@ -35,7 +38,8 @@ export class NotificationService {
       });
 
       // Save notification in DB
-      const savedNotification = await this.notificationRepository.save(notification);
+      const savedNotification =
+        await this.notificationRepository.save(notification);
 
       // Fetch user to get email and phone number
       const user = await this.userService.findById(userId);
@@ -49,28 +53,34 @@ export class NotificationService {
           await this.emailService.sendEmail(user.email, title, message);
         } catch (emailError) {
           // Log error but don't fail the whole flow
-          this.handleError(emailError, 'sendEmail');
+          this.handleError(emailError, "sendEmail");
         }
       }
 
       // Send SMS if available
       if (user.phoneNumber) {
         try {
-          await this.smsService.sendSms(user.phoneNumber, `${title}: ${message}`);
+          await this.smsService.sendSms(
+            user.phoneNumber,
+            `${title}: ${message}`,
+          );
         } catch (smsError) {
           // Log error but don't fail the whole flow
-          this.handleError(smsError, 'sendSMS');
+          this.handleError(smsError, "sendSMS");
         }
       }
 
       return savedNotification;
     } catch (error) {
-      this.handleError(error, 'sendNotification');
+      this.handleError(error, "sendNotification");
     }
   }
 
   private handleError(error: any, context: string): never {
-    console.error(`Error in ${context}:`, error.stack || error.message || error);
+    console.error(
+      `Error in ${context}:`,
+      error.stack || error.message || error,
+    );
     throw new InternalServerErrorException(`Failed in ${context}`);
   }
 }

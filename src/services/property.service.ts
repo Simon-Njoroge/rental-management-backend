@@ -1,16 +1,20 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeepPartial } from 'typeorm';
-import { Property } from '../entities/property.entity';
-import { CreatePropertyDto } from '../dtos/property/CreatePropertyDto';
-import { UpdatePropertyDto } from '../dtos/property/UpdatePropertyDto';
-import { PropertyFilterDto } from '../dtos/property/PropertyFilterDto';  
-import { UserService } from '../services/user.service';
-import { AppLogger } from '../utils/app-logger';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, DeepPartial } from "typeorm";
+import { Property } from "../entities/property.entity";
+import { CreatePropertyDto } from "../dtos/property/CreatePropertyDto";
+import { UpdatePropertyDto } from "../dtos/property/UpdatePropertyDto";
+import { PropertyFilterDto } from "../dtos/property/PropertyFilterDto";
+import { UserService } from "../services/user.service";
+import { AppLogger } from "../utils/app-logger";
 
 @Injectable()
 export class PropertyService {
-  private logger = new AppLogger('PropertyService');
+  private logger = new AppLogger("PropertyService");
 
   constructor(
     @InjectRepository(Property)
@@ -18,67 +22,69 @@ export class PropertyService {
     private userService: UserService,
   ) {}
 
-async create(createPropertyDto: CreatePropertyDto, agentId: string): Promise<Property> {
-  try {
-    const agent = await this.userService.findById(agentId);
-    if (!agent) {
-      throw new NotFoundException(`Agent with ID ${agentId} not found`);
+  async create(
+    createPropertyDto: CreatePropertyDto,
+    agentId: string,
+  ): Promise<Property> {
+    try {
+      const agent = await this.userService.findById(agentId);
+      if (!agent) {
+        throw new NotFoundException(`Agent with ID ${agentId} not found`);
+      }
+
+      const amenities =
+        createPropertyDto.amenities?.map((id) => ({ id })) ?? [];
+
+      const propertyData: DeepPartial<Property> = {
+        ...createPropertyDto,
+        agent,
+        amenities,
+      };
+
+      const property = this.propertyRepository.create(propertyData);
+      await this.propertyRepository.save(property);
+
+      this.logger.log(`Property created: ${property.title}`);
+      return property;
+    } catch (error) {
+      this.handleError(error, "createProperty");
     }
-
-
-    const amenities = createPropertyDto.amenities?.map(id => ({ id })) ?? [];
-
-    const propertyData: DeepPartial<Property> = {
-      ...createPropertyDto,
-      agent,
-      amenities,
-    };
-
-    const property = this.propertyRepository.create(propertyData);
-    await this.propertyRepository.save(property);
-
-    this.logger.log(`Property created: ${property.title}`);
-    return property;
-  } catch (error) {
-    this.handleError(error, 'createProperty');
   }
-}
-
 
   async findAll(filter: PropertyFilterDto): Promise<Property[]> {
     try {
       const query = this.propertyRepository
-        .createQueryBuilder('property')
-        .leftJoinAndSelect('property.agent', 'agent')
-        .where('property.isAvailable = :available', { available: true });
+        .createQueryBuilder("property")
+        .leftJoinAndSelect("property.agent", "agent")
+        .where("property.isAvailable = :available", { available: true });
 
       if (filter.location) {
-        query.andWhere('property.address ILIKE :location', {
+        query.andWhere("property.address ILIKE :location", {
           location: `%${filter.location}%`,
         });
       }
 
       if (filter.minPrice) {
-        query.andWhere('property.price >= :minPrice', {
+        query.andWhere("property.price >= :minPrice", {
           minPrice: filter.minPrice,
         });
       }
 
       if (filter.maxPrice) {
-        query.andWhere('property.price <= :maxPrice', {
+        query.andWhere("property.price <= :maxPrice", {
           maxPrice: filter.maxPrice,
         });
       }
 
-      if (filter.type) {
-        query.andWhere('property.type = :type', {
-          type: filter.type,
-        });
-      }
+      // if (filter.type) {
+      //   query.andWhere("property.type = :type", {
+      //     type: filter.type,
+      //   });
+      // }
 
       return await query.getMany();
     } catch (error) {
-      this.handleError(error, 'findProperties');
+      this.handleError(error, "findProperties");
     }
   }
 
@@ -86,7 +92,7 @@ async create(createPropertyDto: CreatePropertyDto, agentId: string): Promise<Pro
     try {
       const property = await this.propertyRepository.findOne({
         where: { id },
-        relations: ['agent', 'bookings', 'reviews', 'amenities'],
+        relations: ["agent", "bookings", "reviews", "amenities"],
       });
 
       if (!property) {
@@ -94,11 +100,14 @@ async create(createPropertyDto: CreatePropertyDto, agentId: string): Promise<Pro
       }
       return property;
     } catch (error) {
-      this.handleError(error, 'findPropertyById');
+      this.handleError(error, "findPropertyById");
     }
   }
 
-  async update(id: string, updatePropertyDto: UpdatePropertyDto): Promise<Property> {
+  async update(
+    id: string,
+    updatePropertyDto: UpdatePropertyDto,
+  ): Promise<Property> {
     try {
       const property = await this.findById(id);
 
@@ -109,7 +118,7 @@ async create(createPropertyDto: CreatePropertyDto, agentId: string): Promise<Pro
 
       return property;
     } catch (error) {
-      this.handleError(error, 'updateProperty');
+      this.handleError(error, "updateProperty");
     }
   }
 
@@ -122,7 +131,7 @@ async create(createPropertyDto: CreatePropertyDto, agentId: string): Promise<Pro
       }
       this.logger.log(`Property deleted with ID: ${id}`);
     } catch (error) {
-      this.handleError(error, 'removeProperty');
+      this.handleError(error, "removeProperty");
     }
   }
 
@@ -151,18 +160,21 @@ async create(createPropertyDto: CreatePropertyDto, agentId: string): Promise<Pro
         error.stack || error.message || error,
       );
       throw new InternalServerErrorException(
-        'Failed to update property rating',
+        "Failed to update property rating",
       );
     }
   }
 
   private handleError(error: any, context: string): never {
-    this.logger.error(`Error in ${context}`, error.stack || error.message || error);
+    this.logger.error(
+      `Error in ${context}`,
+      error.stack || error.message || error,
+    );
 
     if (error instanceof NotFoundException) {
       throw error; // rethrow not found errors
     }
 
-    throw new InternalServerErrorException('An unexpected error occurred');
+    throw new InternalServerErrorException("An unexpected error occurred");
   }
 }

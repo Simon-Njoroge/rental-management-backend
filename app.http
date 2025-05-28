@@ -1,0 +1,16 @@
+
+###
+GET http://localhost:3000/api/users
+
+###
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "nationalId": "410943",
+  "email": "mukirisimon@gmail.com",
+  "fullName": "Joh Doe",
+  "username": "john4",
+  "phoneNumber": "072034578",
+  "location": "Nairobi"
+}

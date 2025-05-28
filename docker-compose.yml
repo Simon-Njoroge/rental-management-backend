@@ -28,15 +28,18 @@ services:
   app:
     build: .
     container_name: rental_app
+  
     depends_on:
       - postgres
       - redis
     ports:
       - "3000:3000"
+    
     environment:
       - NODE_ENV=development
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+
     env_file:
       - .env
     volumes:

@@ -3,19 +3,19 @@ import {
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Amenity } from '../entities/amenity.entity';
-import { Property } from '../entities/property.entity';
-import { CreateAmenityDto } from '../dtos/amenity/create-amenity.dto';
-import { UpdateAmenityDto } from '../dtos/amenity/update-amenity.dto';
-import { PropertyService } from './property.service';
-import { AppLogger } from '../utils/app-logger';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Amenity } from "../entities/amenity.entity";
+import { Property } from "../entities/property.entity";
+import { CreateAmenityDto } from "../dtos/amenity/create-amenity.dto";
+import { UpdateAmenityDto } from "../dtos/amenity/update-amenity.dto";
+import { PropertyService } from "./property.service";
+import { AppLogger } from "../utils/app-logger";
 
 @Injectable()
 export class AmenityService {
-  private logger = new AppLogger('AmenityService');
+  private logger = new AppLogger("AmenityService");
 
   constructor(
     @InjectRepository(Amenity)
@@ -31,7 +31,7 @@ export class AmenityService {
       });
 
       if (existingAmenity) {
-        throw new ConflictException('Amenity with this name already exists');
+        throw new ConflictException("Amenity with this name already exists");
       }
 
       const amenity = this.amenityRepository.create(createAmenityDto);
@@ -39,16 +39,16 @@ export class AmenityService {
       this.logger.log(`Amenity created: ${amenity.name}`);
       return amenity;
     } catch (error) {
-      this.handleError(error, 'create');
+      this.handleError(error, "create");
     }
   }
 
   // FIND ALL
   async findAll(): Promise<Amenity[]> {
     try {
-      return await this.amenityRepository.find({ relations: ['properties'] });
+      return await this.amenityRepository.find({ relations: ["properties"] });
     } catch (error) {
-      this.handleError(error, 'findAll');
+      this.handleError(error, "findAll");
     }
   }
 
@@ -57,7 +57,7 @@ export class AmenityService {
     try {
       const amenity = await this.amenityRepository.findOne({
         where: { id },
-        relations: ['properties'],
+        relations: ["properties"],
       });
 
       if (!amenity) {
@@ -66,12 +66,15 @@ export class AmenityService {
 
       return amenity;
     } catch (error) {
-      this.handleError(error, 'findById');
+      this.handleError(error, "findById");
     }
   }
 
   // UPDATE
-  async update(id: string, updateAmenityDto: UpdateAmenityDto): Promise<Amenity> {
+  async update(
+    id: string,
+    updateAmenityDto: UpdateAmenityDto,
+  ): Promise<Amenity> {
     try {
       const amenity = await this.findById(id);
       const updated = Object.assign(amenity, updateAmenityDto);
@@ -79,7 +82,7 @@ export class AmenityService {
       this.logger.log(`Amenity updated: ${updated.name}`);
       return updated;
     } catch (error) {
-      this.handleError(error, 'update');
+      this.handleError(error, "update");
     }
   }
 
@@ -90,12 +93,15 @@ export class AmenityService {
       await this.amenityRepository.remove(amenity);
       this.logger.log(`Amenity deleted: ${amenity.name}`);
     } catch (error) {
-      this.handleError(error, 'delete');
+      this.handleError(error, "delete");
     }
   }
 
   // ADD AMENITY TO PROPERTY
-  async addAmenityToProperty(propertyId: string, amenityId: string): Promise<void> {
+  async addAmenityToProperty(
+    propertyId: string,
+    amenityId: string,
+  ): Promise<void> {
     try {
       const [property, amenity] = await Promise.all([
         this.propertyService.findById(propertyId),
@@ -104,13 +110,13 @@ export class AmenityService {
 
       await this.amenityRepository
         .createQueryBuilder()
-        .relation(Property, 'amenities')
+        .relation(Property, "amenities")
         .of(property)
         .add(amenity);
 
       this.logger.log(`Amenity ${amenityId} added to property ${propertyId}`);
     } catch (error) {
-      this.handleError(error, 'addAmenityToProperty');
+      this.handleError(error, "addAmenityToProperty");
     }
   }
 
@@ -118,7 +124,10 @@ export class AmenityService {
   private handleError(error: any, context: string): never {
     this.logger.error(`Error in ${context}: ${error.message}`, error.stack);
 
-    if (error instanceof ConflictException || error instanceof NotFoundException) {
+    if (
+      error instanceof ConflictException ||
+      error instanceof NotFoundException
+    ) {
       throw error;
     }
 

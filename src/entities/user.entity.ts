@@ -7,6 +7,7 @@ import {
   OneToMany,
   BeforeInsert,
   BeforeUpdate,
+  ManyToOne,
   getRepository,
 } from "typeorm";
 import * as bcrypt from "bcryptjs";
@@ -18,6 +19,8 @@ import { Property } from "./property.entity";
 import { Notification } from "./notification.entity";
 import { AuthProvider } from "./auth-provider.entity";
 import { Session } from "./session.entity";
+import { SubscriptionPlan } from "./subscription-plan.entity";
+import { SupportTicket } from "./support-ticket.entity";
 
 export enum UserRole {
   TENANT = "tenant",
@@ -65,16 +68,16 @@ export class User {
   @Column({ default: false })
   passwordChanged!: boolean;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   passwordResetToken!: string | null;
 
-  @Column({type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   passwordResetExpires!: Date | null;
 
   @Column({ type: "enum", enum: UserRole, default: UserRole.TENANT })
   role!: UserRole;
 
-  @Column({type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   profileImage!: string | null | undefined;
 
   // Relationships
@@ -104,6 +107,12 @@ export class User {
 
   @OneToMany(() => Session, (session) => session.user)
   sessions!: Session[];
+
+  @ManyToOne(() => SubscriptionPlan, (plan) => plan.users, { nullable: true, eager: true })
+  subscriptionPlan?: SubscriptionPlan;
+
+  @OneToMany(() => SupportTicket, (ticket) => ticket.user)
+  tickets!: SupportTicket[];
 
   // Timestamps
   @CreateDateColumn()
@@ -169,3 +178,4 @@ interface GoogleUser {
   name: string;
   picture?: string;
 }
+

@@ -1,14 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+// src/services/configService.ts
+import * as dotenv from "dotenv";
+import * as path from "path";
 
-@Injectable()
 export class ConfigService {
   private readonly envConfig: { [key: string]: string };
 
   constructor() {
-    // Load environment variables from .env file located at the project root
-    const envFilePath = path.resolve(process.cwd(), '.env');
+    const envFilePath = path.resolve(process.cwd(), ".env");
     const result = dotenv.config({ path: envFilePath });
 
     if (result.error) {
@@ -19,47 +17,39 @@ export class ConfigService {
   }
 
   get(key: string): string | undefined {
-    // First check if it's set in process.env, else fallback to .env config
     return process.env[key] || this.envConfig[key];
   }
 
-  // Optional: Typed getters for frequently used configs
-
   getEmailHost(): string {
-    return this.get('EMAIL_HOST') || 'localhost';
+    return this.get("SMTP_HOST") || "smtp.gmail.com";
   }
 
   getEmailPort(): number {
-    return Number(this.get('EMAIL_PORT') || 587);
+    return Number(this.get("SMTP_PORT") || 587);
+  }
+
+  getEmailSecure(): boolean {
+    const secure = this.get("SMTP_SECURE");
+    return secure === "true";
   }
 
   getEmailUser(): string {
-    return this.get('EMAIL_USER') || '';
+    return this.get("SMTP_USERNAME") || "";
   }
 
   getEmailPassword(): string {
-    return this.get('EMAIL_PASSWORD') || '';
+    return this.get("SMTP_PASSWORD") || "";
   }
 
-  getMpesaConsumerKey(): string {
-    return this.get('MPESA_CONSUMER_KEY') || '';
+  getEmailFromName(): string {
+    return this.get("SMTP_FROM_NAME") || "Your App";
   }
 
-  getMpesaConsumerSecret(): string {
-    return this.get('MPESA_CONSUMER_SECRET') || '';
-  }
-
-  getMpesaShortcode(): string {
-    return this.get('MPESA_SHORTCODE') || '';
-  }
-
-  getSmsCallbackUrl(): string {
-    return this.get('SMS_CALLBACK_URL') || '';
+  getEmailFromAddress(): string {
+    return this.get("EMAIL_FROM") || this.getEmailUser();
   }
 
   getAppUrl(): string {
-    return this.get('APP_URL') || 'http://localhost:3000';
+    return this.get("FRONTEND_URL") || "http://localhost:3000";
   }
-
-  // Add more getters as needed
 }

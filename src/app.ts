@@ -4,6 +4,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { AppDataSource } from "./config/data-source";
 import { Logger } from "./utils/logger";
+import userRoutes from "./routes/user.routes";
 
 class App {
   public app: express.Application;
@@ -28,6 +29,9 @@ class App {
     );
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+
+    //routers
+    this.app.use("/api/users", userRoutes);
 
     // Rate limiting
     const limiter = rateLimit({
@@ -70,14 +74,11 @@ class App {
     });
   }
 
-
   public listen() {
     this.app.listen(this.port, () => {
       Logger.info(`Server running on port ${this.port}`);
     });
   }
-
-  
 }
 
 export default App;

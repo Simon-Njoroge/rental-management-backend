@@ -11,7 +11,7 @@ import {
   IsUUID,
   ArrayNotEmpty,
 } from "class-validator";
-import { PropertyType } from "../../entities/property.entity";
+// import { PropertyType } from "../../entities/property.entity";
 
 export class CreatePropertyDto {
   @IsString()
@@ -46,13 +46,13 @@ export class CreatePropertyDto {
   @IsInt()
   squareMeters!: number;
 
-  @IsEnum(PropertyType)
-  type!: PropertyType;
+  // @IsEnum(PropertyType)
+  // type!: PropertyType;
 
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsString({ each: true })
-  images!: string[];
+  // @IsArray()
+  // @ArrayNotEmpty()
+  // @IsString({ each: true })
+  // images!: string[];
 
   @IsOptional()
   @IsBoolean()
@@ -71,5 +71,5 @@ export class CreatePropertyDto {
   amenities?: string[];
 
   @IsOptional()
-  rating?:number
+  rating?: number;
 }

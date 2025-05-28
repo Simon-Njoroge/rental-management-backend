@@ -31,7 +31,7 @@ export class Notification {
   @Column({ default: false })
   isRead!: boolean;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   actionUrl!: string | null;
 
   @ManyToOne(() => User, (user) => user.notifications)

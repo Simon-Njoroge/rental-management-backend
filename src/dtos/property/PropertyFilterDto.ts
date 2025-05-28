@@ -1,5 +1,5 @@
-import { IsOptional, IsString, IsNumber, IsEnum } from 'class-validator';
-import { PropertyType } from '../../entities/property.entity';
+import { IsOptional, IsString, IsNumber } from "class-validator";
+// import { PropertyType } from "../../entities/property.entity";
 
 export class PropertyFilterDto {
   @IsOptional()
@@ -14,7 +14,7 @@ export class PropertyFilterDto {
   @IsNumber()
   maxPrice?: number;
 
-  @IsOptional()
-  @IsEnum(PropertyType)
-  type?: PropertyType;
+  // @IsOptional()
+  // @IsEnum(PropertyType)
+  // type?: PropertyType;
 }

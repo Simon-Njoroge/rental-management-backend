@@ -63,7 +63,7 @@
 //   }
 
 //   private handlePaymentError(error: any): never {
-    
+
 //     if (error.isPaymentError) {
 //       throw new BadRequestException(error.message);
 //     }

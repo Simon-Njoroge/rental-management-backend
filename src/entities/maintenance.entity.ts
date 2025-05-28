@@ -48,7 +48,7 @@ export class Maintenance {
   })
   priority!: MaintenancePriority;
 
-  @Column({ type: "jsonb", nullable: true }) 
+  @Column({ type: "jsonb", nullable: true })
   resolutionNotes!: object | null;
 
   @ManyToOne(() => User, (user) => user.maintenanceRequests)

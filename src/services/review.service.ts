@@ -1,11 +1,17 @@
-import { Injectable, BadRequestException, ConflictException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Review } from '../entities/review.entity';
-import { CreateReviewDto } from '../dtos/review/CreateReviewDto';
-import { UserService } from '../services/user.service';
-import { PropertyService } from '../services/property.service';
-import { BookingService } from '../services/booking.service';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Review } from "../entities/review.entity";
+import { CreateReviewDto } from "../dtos/review/CreateReviewDto";
+import { UserService } from "../services/user.service";
+import { PropertyService } from "../services/property.service";
+import { BookingService } from "../services/booking.service";
 
 @Injectable()
 export class ReviewService {
@@ -25,17 +31,26 @@ export class ReviewService {
       ]);
 
       if (!user) {
-        throw new NotFoundException(`User with id ${createReviewDto.userId} not found`);
+        throw new NotFoundException(
+          `User with id ${createReviewDto.userId} not found`,
+        );
       }
       if (!property) {
-        throw new NotFoundException(`Property with id ${createReviewDto.propertyId} not found`);
+        throw new NotFoundException(
+          `Property with id ${createReviewDto.propertyId} not found`,
+        );
       }
 
       // Verify user has completed a booking for this property
-      const hasBooked = await this.bookingService.hasUserBookedProperty(user.id, property.id);
+      const hasBooked = await this.bookingService.hasUserBookedProperty(
+        user.id,
+        property.id,
+      );
 
       if (!hasBooked) {
-        throw new BadRequestException('You must book this property before reviewing');
+        throw new BadRequestException(
+          "You must book this property before reviewing",
+        );
       }
 
       // Check if review already exists
@@ -44,7 +59,7 @@ export class ReviewService {
       });
 
       if (existingReview) {
-        throw new ConflictException('You have already reviewed this property');
+        throw new ConflictException("You have already reviewed this property");
       }
 
       const review = this.reviewRepository.create({
@@ -61,23 +76,23 @@ export class ReviewService {
 
       return savedReview;
     } catch (error) {
-      this.handleError(error, 'createReview');
+      this.handleError(error, "createReview");
     }
   }
 
   async findByProperty(propertyId: string): Promise<Review[]> {
     return this.reviewRepository.find({
       where: { property: { id: propertyId } },
-      relations: ['user'],
-      order: { createdAt: 'DESC' },
+      relations: ["user"],
+      order: { createdAt: "DESC" },
     });
   }
 
   async findByUser(userId: string): Promise<Review[]> {
     return this.reviewRepository.find({
       where: { user: { id: userId } },
-      relations: ['property'],
-      order: { createdAt: 'DESC' },
+      relations: ["property"],
+      order: { createdAt: "DESC" },
     });
   }
 
@@ -88,7 +103,9 @@ export class ReviewService {
     });
 
     if (!review) {
-      throw new NotFoundException('Review not found or not authorized to delete');
+      throw new NotFoundException(
+        "Review not found or not authorized to delete",
+      );
     }
 
     await this.reviewRepository.remove(review);
@@ -99,9 +116,9 @@ export class ReviewService {
 
   private async updatePropertyRating(propertyId: string): Promise<void> {
     const result = await this.reviewRepository
-      .createQueryBuilder('review')
-      .select('AVG(review.rating)', 'average')
-      .where('review.propertyId = :propertyId', { propertyId })
+      .createQueryBuilder("review")
+      .select("AVG(review.rating)", "average")
+      .where("review.propertyId = :propertyId", { propertyId })
       .getRawOne();
 
     const averageRating = parseFloat(result.average) || 0;
@@ -110,11 +127,15 @@ export class ReviewService {
   }
 
   private handleError(error: any, context: string): never {
-    if (error instanceof BadRequestException || error instanceof ConflictException || error instanceof NotFoundException) {
+    if (
+      error instanceof BadRequestException ||
+      error instanceof ConflictException ||
+      error instanceof NotFoundException
+    ) {
       throw error;
     }
     // Log the error with context for debugging
     console.error(`Error in ReviewService.${context}:`, error);
-    throw new InternalServerErrorException('Internal server error');
+    throw new InternalServerErrorException("Internal server error");
   }
 }

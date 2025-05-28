@@ -17,13 +17,13 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: true,
   migrationsRun: false,
-//   cache: {
-//   type: "redis",
-//   options: {
-//     host: process.env.REDIS_HOST!,
-//     port: parseInt(process.env.REDIS_PORT || "6379"),
-//   },
-// },
+  //   cache: {
+  //   type: "redis",
+  //   options: {
+  //     host: process.env.REDIS_HOST!,
+  //     port: parseInt(process.env.REDIS_PORT || "6379"),
+  //   },
+  // },
 });
 
 // Then add the retry logic

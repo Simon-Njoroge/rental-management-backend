@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AuthProvider } from '../entities/auth-provider.entity';
-import { User } from '../entities/user.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { AuthProvider } from "../entities/auth-provider.entity";
+import { User } from "../entities/user.entity";
 
 @Injectable()
 export class AuthProviderService {
@@ -13,9 +13,13 @@ export class AuthProviderService {
     private userRepository: Repository<User>,
   ) {}
 
-  async linkProvider(userId: string, provider: 'google' | 'safaricom', providerId: string): Promise<AuthProvider> {
+  async linkProvider(
+    userId: string,
+    provider: "google" | "safaricom",
+    providerId: string,
+  ): Promise<AuthProvider> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException("User not found");
 
     const existing = await this.authProviderRepository.findOne({
       where: { provider, providerId },
@@ -32,10 +36,13 @@ export class AuthProviderService {
     return this.authProviderRepository.save(newProvider);
   }
 
-  async findByProviderId(provider: 'google' | 'safaricom', providerId: string): Promise<AuthProvider | null> {
+  async findByProviderId(
+    provider: "google" | "safaricom",
+    providerId: string,
+  ): Promise<AuthProvider | null> {
     return this.authProviderRepository.findOne({
       where: { provider, providerId },
-      relations: ['user'],
+      relations: ["user"],
     });
   }
 

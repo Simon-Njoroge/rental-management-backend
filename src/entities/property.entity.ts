@@ -14,15 +14,17 @@ import { Booking } from "./booking.entity";
 import { Amenity } from "./amenity.entity";
 import { Review } from "./review.entity";
 import type { Maintenance } from "./maintenance.entity";
-
-export enum PropertyType {
-  APARTMENT = "apartment",
-  HOUSE = "house",
-  VILLA = "villa",
-  CONDO = "condominium",
-  TOWNHOUSE = "townhouse",
-  STUDIO = "studio",
-}
+import { PropertyImage } from "./property-image.entity";
+import { Category } from "./category.entity";
+import { Location } from "./location.entity";
+// export enum PropertyType {
+//   APARTMENT = "apartment",
+//   HOUSE = "house",
+//   VILLA = "villa",
+//   CONDO = "condominium",
+//   TOWNHOUSE = "townhouse",
+//   STUDIO = "studio",
+// }
 
 @Entity()
 export class Property {
@@ -56,11 +58,9 @@ export class Property {
   @Column("int")
   squareMeters!: number;
 
-  @Column({ type: "enum", enum: PropertyType })
-  type!: PropertyType;
+  // @Column({ type: "enum", enum: PropertyType })
+  // type!: PropertyType;
 
-  @Column("simple-array")
-  images!: string[];
 
   @Column({ default: true })
   isAvailable!: boolean;
@@ -68,7 +68,7 @@ export class Property {
   @Column({ default: false })
   isFeatured!: boolean;
 
-  @Column('float', { default: 0 })
+  @Column("float", { default: 0 })
   rating!: number;
 
   @ManyToOne(() => User, (user) => user.properties)
@@ -82,6 +82,19 @@ export class Property {
 
   @OneToMany("Maintenance", "property")
   maintenanceRequests!: Maintenance[];
+
+  @OneToMany(() => PropertyImage, (image) => image.property, {
+  cascade: true,
+  })
+  images!: PropertyImage[];
+
+  @ManyToOne(() => Category, (category) => category.properties, {
+  nullable: true,
+  })
+  category!: Category;
+
+  @ManyToOne(() => Location, (location) => location.properties, { eager: true })
+  location!: Location;
 
   @ManyToMany(() => Amenity)
   @JoinTable()

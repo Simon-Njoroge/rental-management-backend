@@ -1,6 +1,5 @@
-
-import { Logger as WinstonLogger } from 'winston';
-import { Logger } from './logger';
+import { Logger as WinstonLogger } from "winston";
+import { Logger } from "./logger";
 
 export class AppLogger {
   private context?: string;
@@ -17,8 +16,7 @@ export class AppLogger {
     Logger.info(this.formatMessage(message));
   }
 
- log(message: string) {
-    
+  log(message: string) {
     this.info(message);
   }
 

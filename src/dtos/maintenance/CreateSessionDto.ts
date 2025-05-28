@@ -1,6 +1,9 @@
 // dto/maintenance.dto.ts
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { MaintenanceStatus, MaintenancePriority } from '../../entities/maintenance.entity';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import {
+  MaintenanceStatus,
+  MaintenancePriority,
+} from "../../entities/maintenance.entity";
 
 export class CreateMaintenanceDto {
   @IsNotEmpty()
