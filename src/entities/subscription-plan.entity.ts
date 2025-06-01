@@ -20,6 +20,6 @@ export class SubscriptionPlan {
   @Column()
   durationInDays!: number;
 
-  @OneToMany(() => User, (user) => user.subscriptionPlan)
-  users!: User[];
+//   @OneToMany(() => User, (user) => user.subscriptionPlan)
+//   users!: User[];
 }

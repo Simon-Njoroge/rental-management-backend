@@ -105,14 +105,14 @@ export class User {
   @OneToMany(() => AuthProvider, (provider) => provider.user)
   authProviders!: AuthProvider[];
 
-  @OneToMany(() => Session, (session) => session.user)
-  sessions!: Session[];
+  // @OneToMany(() => Session, (session) => session.user)
+  // sessions!: Session[];
 
-  @ManyToOne(() => SubscriptionPlan, (plan) => plan.users, { nullable: true, eager: true })
-  subscriptionPlan?: SubscriptionPlan;
+  // @ManyToOne(() => SubscriptionPlan, (plan) => plan.users, { nullable: true, eager: true })
+  // subscriptionPlan?: SubscriptionPlan;
 
-  @OneToMany(() => SupportTicket, (ticket) => ticket.user)
-  tickets!: SupportTicket[];
+  // @OneToMany(() => SupportTicket, (ticket) => ticket.user)
+  // tickets!: SupportTicket[];
 
   // Timestamps
   @CreateDateColumn()
