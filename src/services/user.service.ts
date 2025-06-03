@@ -7,7 +7,7 @@ import { AppDataSource } from "../config/data-source";
 import { createHttpError } from "../utils/errors";
 import { sendAccountCreationEmail } from "../utils/email/password";
 import { generateRandomPassword } from '../utils/password-generator'; 
-
+import { Logger } from "../utils/logger";
 export class UserService {
   private userRepository: Repository<User>;
 
@@ -34,6 +34,7 @@ const generatedPassword =generateRandomPassword();
 
 if (!generatedPassword) {
   throw new Error("Password generation failed");
+ 
 }
 
 console.log("Generated password:", generatedPassword);
@@ -50,6 +51,9 @@ const hashedPassword = await bcrypt.hash(generatedPassword, 12);
   const savedUser = await this.userRepository.save(newUser);
 
   await sendAccountCreationEmail(savedUser.email, generatedPassword);
+
+  Logger.info(`User created with ID: ${savedUser.id}`);
+  Logger.info(`Account creation email sent to: ${savedUser.email}`);
 
   return savedUser;
 }

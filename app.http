@@ -7,10 +7,12 @@ POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "nationalId": "410943933",
-  "email": "mukirimary33@gmail.com",
-  "fullName": "Mary Wambui",
-  "username": "mary",
+  "nationalId": "41094390",
+  "email": "mukirisimon22@gmail.com",
+  "firstname": "Simon",
+  "middlename": "Njoroge",
+  "lastname": "Mukiri",
+  "username": "simon",
   "phoneNumber": "0701234693",
   "location": "Nairobi"
 }

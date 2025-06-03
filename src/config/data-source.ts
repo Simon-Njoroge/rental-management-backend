@@ -14,9 +14,9 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || "rental_db",
   entities: ["src/entities/**/*.ts"],
   migrations: ["src/migrations/**/*.ts"],
-  synchronize: false,
+  synchronize: true,
   logging: true,
-  migrationsRun: false,
+  migrationsRun: true,
   //   cache: {
   //   type: "redis",
   //   options: {

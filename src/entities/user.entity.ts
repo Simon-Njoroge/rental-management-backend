@@ -34,7 +34,13 @@ export class User {
   id!: string;
 
   @Column()
-  fullName!: string;
+  firstname!: string;
+
+  @Column()
+  middlename!: string;
+
+  @Column()
+  lastname!: string;
 
   @Column({ unique: true })
   nationalId!: string;
@@ -146,7 +152,7 @@ export class User {
       user = new User();
       user.googleId = googleUser.sub;
       user.email = googleUser.email;
-      user.fullName = googleUser.name;
+      user.firstname = googleUser.name;
       user.profileImage = googleUser.picture;
       user.isVerified = true;
       await userRepository.save(user);
