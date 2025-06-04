@@ -46,13 +46,6 @@ export class CreatePropertyDto {
   @IsInt()
   squareMeters!: number;
 
-  // @IsEnum(PropertyType)
-  // type!: PropertyType;
-
-  // @IsArray()
-  // @ArrayNotEmpty()
-  // @IsString({ each: true })
-  // images!: string[];
 
   @IsOptional()
   @IsBoolean()
@@ -71,5 +64,12 @@ export class CreatePropertyDto {
   amenities?: string[];
 
   @IsOptional()
+  @IsNumber()
   rating?: number;
+
+  @IsUUID()
+  categoryId?: string;
+
+  @IsUUID()
+  locationId?: string;
 }

@@ -1,138 +1,77 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  InternalServerErrorException,
-} from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+// src/services/amenity.service.ts
 import { Repository } from "typeorm";
 import { Amenity } from "../entities/amenity.entity";
-import { Property } from "../entities/property.entity";
+import { AppDataSource } from "../config/data-source";
 import { CreateAmenityDto } from "../dtos/amenity/create-amenity.dto";
 import { UpdateAmenityDto } from "../dtos/amenity/update-amenity.dto";
-import { PropertyService } from "./property.service";
-import { AppLogger } from "../utils/app-logger";
+import { createHttpError } from "../utils/errors";
+import { Logger } from "../utils/logger";
 
-@Injectable()
 export class AmenityService {
-  private logger = new AppLogger("AmenityService");
+  private amenityRepository: Repository<Amenity>;
 
-  constructor(
-    @InjectRepository(Amenity)
-    private amenityRepository: Repository<Amenity>,
-    private propertyService: PropertyService,
-  ) {}
+  constructor() {
+    this.amenityRepository = AppDataSource.getRepository(Amenity);
+  }
 
-  // CREATE
-  async create(createAmenityDto: CreateAmenityDto): Promise<Amenity> {
+  async create(dto: CreateAmenityDto): Promise<{ success: boolean; message: string; amenity: Amenity; timestamp: string }> {
     try {
-      const existingAmenity = await this.amenityRepository.findOne({
-        where: { name: createAmenityDto.name },
-      });
-
-      if (existingAmenity) {
-        throw new ConflictException("Amenity with this name already exists");
+      const existing = await this.amenityRepository.findOneBy({ name: dto.name });
+      if (existing) {
+        throw createHttpError(409, "Amenity with this name already exists");
       }
 
-      const amenity = this.amenityRepository.create(createAmenityDto);
-      await this.amenityRepository.save(amenity);
-      this.logger.log(`Amenity created: ${amenity.name}`);
-      return amenity;
-    } catch (error) {
-      this.handleError(error, "create");
-    }
-  }
+      const amenity = this.amenityRepository.create(dto);
+      const savedAmenity = await this.amenityRepository.save(amenity);
 
-  // FIND ALL
-  async findAll(): Promise<Amenity[]> {
-    try {
-      return await this.amenityRepository.find({ relations: ["properties"] });
-    } catch (error) {
-      this.handleError(error, "findAll");
-    }
-  }
+      Logger.info(`Amenity created with ID: ${savedAmenity.id}`);
 
-  // FIND BY ID
-  async findById(id: string): Promise<Amenity> {
-    try {
-      const amenity = await this.amenityRepository.findOne({
-        where: { id },
-        relations: ["properties"],
-      });
-
-      if (!amenity) {
-        throw new NotFoundException(`Amenity with ID ${id} not found`);
-      }
-
-      return amenity;
-    } catch (error) {
-      this.handleError(error, "findById");
-    }
-  }
-
-  // UPDATE
-  async update(
-    id: string,
-    updateAmenityDto: UpdateAmenityDto,
-  ): Promise<Amenity> {
-    try {
-      const amenity = await this.findById(id);
-      const updated = Object.assign(amenity, updateAmenityDto);
-      await this.amenityRepository.save(updated);
-      this.logger.log(`Amenity updated: ${updated.name}`);
-      return updated;
-    } catch (error) {
-      this.handleError(error, "update");
-    }
-  }
-
-  // DELETE
-  async delete(id: string): Promise<void> {
-    try {
-      const amenity = await this.findById(id);
-      await this.amenityRepository.remove(amenity);
-      this.logger.log(`Amenity deleted: ${amenity.name}`);
-    } catch (error) {
-      this.handleError(error, "delete");
-    }
-  }
-
-  // ADD AMENITY TO PROPERTY
-  async addAmenityToProperty(
-    propertyId: string,
-    amenityId: string,
-  ): Promise<void> {
-    try {
-      const [property, amenity] = await Promise.all([
-        this.propertyService.findById(propertyId),
-        this.findById(amenityId),
-      ]);
-
-      await this.amenityRepository
-        .createQueryBuilder()
-        .relation(Property, "amenities")
-        .of(property)
-        .add(amenity);
-
-      this.logger.log(`Amenity ${amenityId} added to property ${propertyId}`);
-    } catch (error) {
-      this.handleError(error, "addAmenityToProperty");
-    }
-  }
-
-  // ERROR HANDLER
-  private handleError(error: any, context: string): never {
-    this.logger.error(`Error in ${context}: ${error.message}`, error.stack);
-
-    if (
-      error instanceof ConflictException ||
-      error instanceof NotFoundException
-    ) {
+      return {
+        success: true,
+        message: "Amenity created successfully",
+        amenity: savedAmenity,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error: any) {
+      Logger.error(`Error creating amenity: ${error.message}`);
       throw error;
     }
+  }
 
-    throw new InternalServerErrorException(
-      `An error occurred in AmenityService [${context}]`,
-    );
+  async findAll(): Promise<Amenity[]> {
+    return this.amenityRepository.find();
+  }
+
+  async findById(id: string): Promise<Amenity> {
+    const amenity = await this.amenityRepository.findOneBy({ id });
+    if (!amenity) throw createHttpError(404, "Amenity not found");
+    return amenity;
+  }
+
+  async update(id: string, dto: UpdateAmenityDto): Promise<Amenity> {
+    const amenity = await this.amenityRepository.findOneBy({ id });
+    if (!amenity) throw createHttpError(404, "Amenity not found");
+
+    if (dto.name && dto.name !== amenity.name) {
+      const existing = await this.amenityRepository.findOneBy({ name: dto.name });
+      if (existing && existing.id !== id) {
+        throw createHttpError(409, "Amenity with this name already exists");
+      }
+    }
+
+    Object.assign(amenity, dto);
+    const updated = await this.amenityRepository.save(amenity);
+
+    Logger.info(`Amenity updated with ID: ${updated.id}`);
+
+    return updated;
+  }
+
+  async delete(id: string): Promise<void> {
+    const result = await this.amenityRepository.delete(id);
+    if (result.affected === 0) {
+      throw createHttpError(404, "Amenity not found");
+    }
+    Logger.info(`Amenity deleted with ID: ${id}`);
   }
 }

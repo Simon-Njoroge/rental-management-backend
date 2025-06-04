@@ -8,6 +8,7 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  JoinColumn,
 } from "typeorm";
 import { User } from "./user.entity";
 import { Booking } from "./booking.entity";
@@ -17,14 +18,7 @@ import type { Maintenance } from "./maintenance.entity";
 import { PropertyImage } from "./property-image.entity";
 import { Category } from "./category.entity";
 import { Location } from "./location.entity";
-// export enum PropertyType {
-//   APARTMENT = "apartment",
-//   HOUSE = "house",
-//   VILLA = "villa",
-//   CONDO = "condominium",
-//   TOWNHOUSE = "townhouse",
-//   STUDIO = "studio",
-// }
+
 
 @Entity()
 export class Property {
@@ -72,6 +66,7 @@ export class Property {
   rating!: number;
 
   @ManyToOne(() => User, (user) => user.properties)
+  @JoinColumn({name: "agentId"})
   agent!: User;
 
   @OneToMany(() => Booking, (booking) => booking.property)
@@ -91,9 +86,11 @@ export class Property {
   @ManyToOne(() => Category, (category) => category.properties, {
   nullable: true,
   })
+  @JoinColumn({ name: "categoryId" })
   category!: Category;
 
   @ManyToOne(() => Location, (location) => location.properties, { eager: true })
+  @JoinColumn({ name: "locationId" })
   location!: Location;
 
   @ManyToMany(() => Amenity)

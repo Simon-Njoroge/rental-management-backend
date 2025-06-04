@@ -16,3 +16,193 @@ Content-Type: application/json
   "phoneNumber": "0701234693",
   "location": "Nairobi"
 }
+
+
+###############################################################
+properties
+###############################################################
+
+### get properties
+###
+GET http://localhost:3000/api/properties
+###
+POST http://localhost:3000/api/properties
+Content-Type: application/json
+
+{
+  "title": "Modern Family House",
+  "description": "A spacious and modern family house located in a quiet neighborhood.",
+  "address": "123 Palm Street, Karen, Nairobi",
+  "price": 35000000,
+  "latitude": -1.3032,
+  "longitude": 36.7073,
+  "bedrooms": 4,
+  "bathrooms": 3,
+  "squareMeters": 250,
+  "isAvailable": true,
+  "isFeatured": true,
+  "agentId": "d27bb5aa-d1dc-4974-9182-25c6658ef361",
+  "amenities": [
+    "32e3a919-e860-4900-9107-b30baa667a1a",
+    "2151e242-bbe6-486c-bfe8-aef3724e35ef"
+  ],
+  "rating": 4.5,
+  "categoryId": "5a2a082f-4f25-4519-bd0c-c4886f63ba4a",
+  "locationId": "c7cd2737-1826-4705-a431-371d90059a51"
+}
+
+###############################################################
+### get property by id
+###
+GET http://localhost:3000/api/properties/60c72b2f9b1d4c001c8e4e3a
+###
+PUT http://localhost:3000/api/properties/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+
+{
+  "name": "Green Valley Apartments Updated",
+  "location": "Nairobi, Kenya",
+  "description": "An updated description for the apartment complex.",
+  "pricePerMonth": 160000
+}
+###
+DELETE http://localhost:3000/api/properties/60c72b2f9b1d4c001c8e4e3a
+
+
+###category
+###
+GET http://localhost:3000/api/categories
+###
+POST http://localhost:3000/api/categories
+Content-Type: application/json
+
+{
+  "name": "Luxury Apartments",
+  "iconUrl": "High-end apartments with premium features."
+}
+
+###############################################################
+### get category by id
+###
+GET http://localhost:3000/api/categories/60c72b2f9b1d4c001c8e4e3a
+
+###
+PUT http://localhost:3000/api/categories/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+
+{
+  "name": "Luxury Apartments Updated",
+  "iconUrl": "Updated description for luxury apartments."
+}
+###
+DELETE http://localhost:3000/api/categories/ee974bc9-7bd4-4807-a498-a94870acef7b
+
+### Locations
+###
+GET http://localhost:3000/api/locations
+
+###
+POST http://localhost:3000/api/locations
+Content-Type: application/json  
+
+{
+  "name": "Nyeri",
+  "regionId":"0f662051-0751-494c-ad25-878de7f184b0"
+}
+###############################################################
+### get location by id
+###
+GET http://localhost:3000/api/locations/60c72b2f9b1d4c001c8e4e3a
+###
+PUT http://localhost:3000/api/locations/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+
+{
+  "name": "Nairobi Central Updated",
+}
+###
+DELETE http://localhost:3000/api/locations/60c72b2f9b1d4c001c8e4e3a 
+
+
+### region
+###
+GET http://localhost:3000/api/regions
+###
+POST http://localhost:3000/api/regions
+Content-Type: application/json
+
+{
+  "name": "Mt Kenya Region"
+  
+}
+###############################################################
+
+### get region by id
+###
+GET http://localhost:3000/api/regions/60c72b2f9b1d4c001c8e4e3a
+###
+PUT http://localhost:3000/api/regions/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+
+  {
+    "name": "Nairobi Region Updated",
+  }
+  ###
+  DELETE http://localhost:3000/api/regions/60c72b2f9b1d4c001c8e4e3a
+
+### amenities
+###
+GET http://localhost:3000/api/amenities
+###
+POST http://localhost:3000/api/amenities
+Content-Type: application/json
+
+{
+  "name": "wifi",
+  "iconUrl": "https://example.com/icons/swimming-pool.png"
+}
+###############################################################
+### get amenity by id
+###
+GET http://localhost:3000/api/amenities/60c72b2f9b1d4c001c8e4e3a
+###
+PUT http://localhost:3000/api/amenities/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+  {
+    "name": "Swimming Pool Updated",
+    "iconUrl": "https://example.com/icons/swimming-pool-updated.png"
+  }
+###
+DELETE http://localhost:3000/api/amenities/60c72b2f9b1d4c001c8e4e3a
+
+
+### images
+###
+GET http://localhost:3000/api/property-images
+###
+POST http://localhost:3000/api/property-images
+Content-Type: application/json
+
+{
+  "url": "https://example3.com/images/property-front.jpg",
+  "altText": "Front view of the house",
+  "order": 1,
+  "propertyId": "d3ca6390-9c47-4fe5-bae9-1a656d9e8613"
+}
+
+###############################################################
+### get image by id
+###
+GET http://localhost:3000/api/property-images/60c72b2f9b1d4c001c8e4e3a
+###
+PUT http://localhost:3000/api/property-images/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+{
+  "url": "https://example.com/images/property-front.jpg",
+  "altText": "Front view of the house",
+  "order": 1,
+  "propertyId": "d3ca6390-9c47-4fe5-bae9-1a656d9e8613"
+}
+###
+DELETE http://localhost:3000/api/property-images/60c72b2f9b1d4c001c8e4e3a
+  

@@ -15,7 +15,7 @@ export class UserService {
     this.userRepository = AppDataSource.getRepository(User);
   }
 
-async create(createUserDto: CreateUserDto): Promise<User> {
+async create(createUserDto: CreateUserDto): Promise<{ success: boolean; message: string; user: User ,timestamp: string }> {
   const existingUser = await this.userRepository.findOne({
     where: [
       { email: createUserDto.email },
@@ -55,7 +55,12 @@ const hashedPassword = await bcrypt.hash(generatedPassword, 12);
   Logger.info(`User created with ID: ${savedUser.id}`);
   Logger.info(`Account creation email sent to: ${savedUser.email}`);
 
-  return savedUser;
+  return {
+    success: true,
+    message: "User created successfully",
+    user: savedUser,
+    timestamp: new Date().toISOString(),
+  };
 }
   async findById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({

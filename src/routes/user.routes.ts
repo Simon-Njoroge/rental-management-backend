@@ -17,7 +17,7 @@ const router = Router();
 router.post("/", createUser);
 
 // Protected routes
-router.get("/", authenticateJWT, getAllUsers);
+router.get("/", getAllUsers);
 router.get("/me/profile", authenticateJWT, getLoggedInProfile);
 router.get("/:id", authenticateJWT, getUserById);
 router.patch("/:id", authenticateJWT, updateUser);

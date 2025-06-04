@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  JoinColumn,
 } from "typeorm";
 import { Region } from "./region.entity";
 import { Property } from "./property.entity";
@@ -17,6 +18,7 @@ export class Location {
   name!: string;
 
   @ManyToOne(() => Region, (region) => region.locations)
+  @JoinColumn({ name: "regionId" })
   region!: Region;
 
   @OneToMany(() => Property, (property) => property.location)

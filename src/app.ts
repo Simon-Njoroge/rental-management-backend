@@ -5,6 +5,12 @@ import rateLimit from "express-rate-limit";
 import { AppDataSource } from "./config/data-source";
 import { Logger } from "./utils/logger";
 import userRoutes from "./routes/user.routes";
+import propertyRoutes from "./routes/property.routes";
+import categoryRoutes from "./routes/category.routes";
+import amenitiesRoutes from "./routes/amenity.routes";
+import locationRoutes from "./routes/location.routes";
+import regionRoutes from "./routes/region.routes";
+import propertyimageRoutes from "./routes/property-image.routes";
 
 class App {
   public app: express.Application;
@@ -32,6 +38,12 @@ class App {
 
     //routers
     this.app.use("/api/users", userRoutes);
+    this.app.use("/api/properties", propertyRoutes);
+    this.app.use("/api/categories", categoryRoutes);
+    this.app.use("/api/amenities", amenitiesRoutes);
+    this.app.use("/api/locations", locationRoutes);
+    this.app.use("/api/regions", regionRoutes);
+    this.app.use("/api/property-images", propertyimageRoutes);
 
     // Rate limiting
     const limiter = rateLimit({
