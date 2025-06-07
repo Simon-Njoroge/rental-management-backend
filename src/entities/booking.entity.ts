@@ -37,8 +37,8 @@ export class Booking {
   @Column("decimal", { precision: 12, scale: 2 })
   totalAmount!: number;
 
-  @Column({ nullable: true })
-  specialRequests!: string;
+  @Column({ type: 'json', nullable: true })
+  specialRequests!: Record<string, any> | null;
 
   @ManyToOne(() => User, (user) => user.bookings)
   user!: User;

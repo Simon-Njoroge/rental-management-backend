@@ -1,208 +1,110 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  Logger,
-  InternalServerErrorException,
-} from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Between, In, Repository } from "typeorm";
-import { Booking, BookingStatus } from "../entities/booking.entity";
+import { Repository } from "typeorm";
+import { Booking, BookingStatus } from "../entities/booking.entity"; // make sure BookingStatus is exported
+import { Property } from "../entities/property.entity";
+import { User } from "../entities/user.entity";
+import { AppDataSource } from "../config/data-source";
 import { CreateBookingDto } from "../dtos/booking/booking.dto";
-import { PropertyService } from "../services/property.service";
-import { UserService } from "../services/user.service";
-import { InvoiceService } from "./invoice.service";
-
-@Injectable()
+import { createHttpError } from "../utils/errors";
+import { Logger } from "../utils/logger";
+import { generateInvoicePdf } from "../utils/generateInoicePdf";
+import { Invoice } from "../entities/invoice.entity";
+import { InvoiceStatus } from "../entities/invoice.entity";
+import { v4 as uuidv4 } from "uuid";
+import  {sendInvoiceEmail} from "../utils/email/invoice";
 export class BookingService {
-  private readonly logger = new Logger(BookingService.name);
+  private bookingRepository: Repository<Booking>;
+  private propertyRepository: Repository<Property>;
+  private userRepository: Repository<User>;
+  private invoiceRepository: Repository<Invoice>;
 
-  constructor(
-    @InjectRepository(Booking)
-    private readonly bookingRepository: Repository<Booking>,
-    private readonly propertyService: PropertyService,
-    private readonly userService: UserService,
-    private invoiceService: InvoiceService,
-  ) {}
+  constructor() {
+    this.bookingRepository = AppDataSource.getRepository(Booking);
+    this.propertyRepository = AppDataSource.getRepository(Property);
+    this.userRepository = AppDataSource.getRepository(User);
+    this.invoiceRepository = AppDataSource.getRepository(Invoice);
+  }
 
-  async create(createBookingDto: CreateBookingDto): Promise<Booking> {
-    this.logger.log("Creating booking...");
+  async create(dto: CreateBookingDto): Promise<{
+    success: boolean;
+    message: string;
+    booking: Booking;
+    timestamp: string;
+  }> {
     const {
-      propertyId,
       userId,
+      propertyId,
       startDate,
       endDate,
       totalAmount,
       specialRequests,
-    } = createBookingDto;
-
-    if (new Date(endDate) <= new Date(startDate)) {
-      this.logger.warn("End date must be after start date");
-      throw new BadRequestException("End date must be after start date");
-    }
-
-    try {
-      const [property, user] = await Promise.all([
-        this.propertyService.findById(propertyId),
-        this.userService.findById(userId),
-      ]);
-
-      if (!property) {
-        this.logger.warn(`Property with id ${propertyId} not found`);
-        throw new NotFoundException("Property not found");
-      }
-
-      if (!user) {
-        this.logger.warn(`User with id ${userId} not found`);
-        throw new NotFoundException("User not found");
-      }
-
-      // Check for conflicting bookings in the same period
-      const conflictingBooking = await this.bookingRepository.findOne({
-        where: {
-          property: { id: property.id },
-          startDate: Between(new Date(startDate), new Date(endDate)),
-          status: In([BookingStatus.CONFIRMED, BookingStatus.ACTIVE]),
-        },
-      });
-
-      if (conflictingBooking) {
-        this.logger.warn(
-          `Property ${property.id} is not available for selected dates`,
-        );
-        throw new BadRequestException(
-          "Property not available for selected dates",
-        );
-      }
-
-      const booking = this.bookingRepository.create({
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        totalAmount,
-        specialRequests,
-        property,
-        user,
-        status: BookingStatus.PENDING,
-      });
-
-      const savedBooking = await this.bookingRepository.save(booking);
-      this.logger.log(`Booking created with id ${savedBooking.id}`);
-
-      await this.invoiceService.generateMonthlyInvoices(savedBooking);
-      this.logger.log(
-        `Monthly invoices generated for booking id ${savedBooking.id}`,
-      );
-
-      return savedBooking;
-    } catch (error: any) {
-      this.logger.error(`Failed to create booking: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async findAll(): Promise<Booking[]> {
-    this.logger.log("Fetching all bookings...");
-    try {
-      return await this.bookingRepository.find({
-        relations: ["property", "user", "invoices", "payments"],
-        order: { createdAt: "DESC" },
-      });
-    } catch (error) {
-      this.handleError(error, "findAllBookings");
-    }
-  }
-
-  async findById(id: string): Promise<Booking> {
-    this.logger.log(`Fetching booking by id: ${id}`);
-    try {
-      const booking = await this.bookingRepository.findOne({
-        where: { id },
-        relations: ["property", "user", "invoices", "payments"],
-      });
-
-      if (!booking) {
-        this.logger.warn(`Booking with id ${id} not found`);
-        throw new NotFoundException("Booking not found");
-      }
-      return booking;
-    } catch (error) {
-      this.handleError(error, "findBookingById");
-    }
-  }
-
-  async updateStatus(id: string, status: BookingStatus): Promise<Booking> {
-    this.logger.log(
-      `Updating booking status to ${status} for booking id: ${id}`,
-    );
-    try {
-      const booking = await this.findById(id);
-
-      if (booking.status === BookingStatus.CANCELLED) {
-        throw new BadRequestException(
-          "Cannot update status of a cancelled booking",
-        );
-      }
-
-      // Optional: add more complex business logic on status transitions
-
-      booking.status = status;
-      await this.bookingRepository.save(booking);
-
-      this.logger.log(
-        `Booking status updated to ${status} for booking id: ${id}`,
-      );
-      return booking;
-    } catch (error) {
-      this.handleError(error, "updateBookingStatus");
-    }
-  }
-
-  async cancelBooking(id: string): Promise<Booking> {
-    this.logger.log(`Cancelling booking with id: ${id}`);
-    try {
-      const booking = await this.findById(id);
-
-      if (booking.status === BookingStatus.CANCELLED) {
-        throw new BadRequestException("Booking is already cancelled");
-      }
-
-      booking.status = BookingStatus.CANCELLED;
-      await this.bookingRepository.save(booking);
-
-      this.logger.log(`Booking cancelled with id: ${id}`);
-
-      // Optionally notify user, update invoices/payments, etc.
-
-      return booking;
-    } catch (error) {
-      this.handleError(error, "cancelBooking");
-    }
-  }
-
-  async hasUserBookedProperty(
-    userId: string,
-    propertyId: string,
-  ): Promise<boolean> {
-    const count = await this.bookingRepository.count({
-      where: {
-        user: { id: userId },
-        property: { id: propertyId },
-        // optionally, check for completed booking status if you have such a field
-        // status: 'completed'
-      },
+    } = dto;
+    const user = await this.userRepository.findOneByOrFail({ id: userId });
+    const property = await this.propertyRepository.findOneByOrFail({
+      id: propertyId,
     });
 
-    return count > 0;
-  }
-
-  private handleError(error: any, context: string): never {
-    this.logger.error(`[${context}] - ${error.message}`, error.stack);
-    if (
-      error instanceof BadRequestException ||
-      error instanceof NotFoundException
-    ) {
-      throw error;
+    // Check property availability
+    if (property.isAvailable === false) {
+      throw createHttpError(
+        400,
+        "Property is currently unavailable for booking"
+      );
     }
-    throw new InternalServerErrorException("Internal server error");
+
+    // Create booking entity
+    const booking = this.bookingRepository.create({
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      totalAmount: totalAmount,
+      specialRequests: specialRequests ?? null,
+      status: BookingStatus.PENDING,
+    });
+
+    // Set relations properly
+    booking.user = user;
+    booking.property = property;
+
+    // Save booking
+    const savedBooking = await this.bookingRepository.save(booking);
+
+    // Generate invoice PDF
+
+    // Mark property as unavailable
+    property.isAvailable = false;
+    await this.propertyRepository.save(property);
+
+    const invoice = this.invoiceRepository.create({
+      invoiceNumber: `INV-${uuidv4().slice(0, 8).toUpperCase()}`,
+      amount: savedBooking.totalAmount,
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      status: InvoiceStatus.PENDING,
+      notes: "Auto-generated invoice for booking",
+      booking: savedBooking,
+    });
+
+    await this.invoiceRepository.save(invoice);
+
+    
+    try {
+      await sendInvoiceEmail(
+        user.email,
+        invoice,
+        savedBooking
+      );
+      Logger.info(`Invoice emailed to ${user.email}`);
+    } catch (err:any) {
+      Logger.error(`Failed to email invoice to ${user.email}: ${err.message}`);
+    }
+
+    Logger.info(
+      `Booking created with ID: ${savedBooking.id} for property ${property.id}`
+    );
+
+    return {
+      success: true,
+      message: "Booking created successfully",
+      booking: savedBooking,
+      timestamp: new Date().toISOString(),
+    };
   }
 }

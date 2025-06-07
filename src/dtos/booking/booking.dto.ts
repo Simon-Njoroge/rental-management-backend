@@ -5,10 +5,17 @@ import {
   IsString,
   IsUUID,
   IsNumber,
+  IsObject
 } from "class-validator";
 import { BookingStatus } from "../../entities/booking.entity";
 
 export class CreateBookingDto {
+  @IsUUID()
+  userId!: string;
+
+  @IsUUID()
+  propertyId!: string;
+
   @IsDateString()
   startDate!: string;
 
@@ -18,15 +25,13 @@ export class CreateBookingDto {
   @IsNumber()
   totalAmount!: number;
 
+ @IsOptional()
+ @IsObject()
+ specialRequests?: Record<string, any>;
+
   @IsOptional()
-  @IsString()
-  specialRequests?: string;
-
-  @IsUUID()
-  userId!: string;
-
-  @IsUUID()
-  propertyId!: string;
+  @IsEnum(BookingStatus)
+  status?: BookingStatus;
 }
 
 export class UpdateBookingDto {

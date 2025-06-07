@@ -16,7 +16,7 @@ export const Logger: winston.Logger = winston.createLogger({
   transports: [
     new winston.transports.Console(),
     new DailyRotateFile({
-      filename: "logs/application-%DATE%.log",
+      filename: "logs/application-%DATE%.log", 
       datePattern: "YYYY-MM-DD",
       zippedArchive: true,
       maxSize: "20m",

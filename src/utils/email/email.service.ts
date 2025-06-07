@@ -1,6 +1,8 @@
 import * as nodemailer from "nodemailer";
 import { ConfigService } from "../../config/service";
-
+import { Invoice } from "../../entities/invoice.entity";
+import { Booking } from "../../entities/booking.entity";
+import { generateInvoicePdf } from '../generateInoicePdf';
 export class EmailService {
   private transporter: nodemailer.Transporter;
 
@@ -84,4 +86,22 @@ export class EmailService {
 
     await this.sendEmail(email, "Password Reset Request", html);
   }
+
+  async sendInvoiceWithAttachment(email: string, invoice: Invoice, booking: Booking): Promise<void> {
+  const pdfBuffer = await  generateInvoicePdf(invoice, booking);
+
+  await this.transporter.sendMail({
+    from: '"Booking App" <no-reply@bookingapp.com>',
+    to: email,
+    subject: "Your Booking Invoice",
+    text: `Please find attached the invoice for your booking.`,
+    attachments: [
+      {
+        filename: `Invoice-${invoice.invoiceNumber}.pdf`,
+        content: pdfBuffer,
+      },
+    ],
+  });
+}
+
 }
