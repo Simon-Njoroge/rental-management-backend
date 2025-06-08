@@ -12,4 +12,23 @@ try {
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
+
+};
+
+// controllers/bookingController.ts
+export const cancelBooking = async (req: Request, res: Response):Promise<any> => {
+  try {
+    const bookingId = req.params.id;
+
+    if (!bookingId) {
+      return res.status(400).json({ message: "Booking ID is required" });
+    }
+
+    const result = await bookingService.cancel(bookingId);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    const status = error.status || 500;
+    const message = error.message || "An unexpected error occurred";
+    return res.status(status).json({ message });
+  }
 };

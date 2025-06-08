@@ -75,7 +75,7 @@ export class BookingService {
 
     const invoice = this.invoiceRepository.create({
       invoiceNumber: `INV-${uuidv4().slice(0, 8).toUpperCase()}`,
-      amount: savedBooking.totalAmount,
+      amount: Number(savedBooking.totalAmount),
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       status: InvoiceStatus.PENDING,
       notes: "Auto-generated invoice for booking",
@@ -107,4 +107,75 @@ export class BookingService {
       timestamp: new Date().toISOString(),
     };
   }
+  //cancel booking
+
+  async cancel(bookingId: string): Promise<{
+  success: boolean;
+  message: string;
+  booking: Booking;
+  timestamp: string;
+}> {
+  const booking = await this.bookingRepository.findOne({
+    where: { id: bookingId },
+    relations: ["property", "user"], // Make sure to load related property and user
+  });
+
+  if (!booking) {
+    throw createHttpError(404, "Booking not found");
+  }
+
+  if (booking.status === BookingStatus.CANCELLED) {
+    throw createHttpError(400, "Booking is already cancelled");
+  }
+
+  // Mark property as available again
+  const property = booking.property;
+  if (!property) {
+    throw createHttpError(404, "Associated property not found");
+  }
+  property.isAvailable = true;
+  await this.propertyRepository.save(property);
+
+  // Mark invoice as cancelled
+  const invoice = await this.invoiceRepository.findOne({
+    where: { booking: { id: booking.id } },
+  });
+
+  if (invoice) {
+    invoice.status = InvoiceStatus.CANCELLED;
+    await this.invoiceRepository.save(invoice);
+    Logger.info(`Invoice with ID: ${invoice.id} has been cancelled`);
+  }
+
+  // Update booking status
+  booking.status = BookingStatus.CANCELLED;
+  const updatedBooking = await this.bookingRepository.save(booking);
+
+  Logger.info(`Booking with ID: ${updatedBooking.id} has been cancelled`);
+
+  // Send cancellation email
+// Send cancellation email only if invoice exists
+if (invoice) {
+  try {
+    await sendInvoiceEmail(booking.user.email, invoice, updatedBooking);
+    Logger.info(`Cancellation email sent to ${booking.user.email}`);
+  } catch (err: any) {
+    Logger.error(
+      `Failed to send cancellation email to ${booking.user.email}: ${err.message}`
+    );
+  }
+} else {
+  Logger.warn(
+    `No invoice found for booking ID: ${booking.id}, skipping cancellation email`
+  );
+}
+
+  return {
+    success: true,
+    message: "Booking cancelled successfully",
+    booking: updatedBooking,
+    timestamp: new Date().toISOString(),
+  };
+}
+
 }

@@ -221,3 +221,7 @@ Content-Type: application/json
   "totalAmount": 1000.00,
   "specialRequests": "Please provide extra towels"
 }
+
+### cancel booking
+###
+PUT  http://localhost:3000/api/bookings/cancelbooking/e2049a05-b851-4c5a-a0af-585833d7a894
