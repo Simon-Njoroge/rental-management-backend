@@ -2,8 +2,8 @@ import PDFDocument from "pdfkit";
 import Table from "pdfkit-table";
 import fs from "fs";
 import path from "path";
-import { Invoice } from "../entities/invoice.entity";
-import { Booking } from "../entities/booking.entity";
+import { Invoice, InvoiceStatus } from "../entities/invoice.entity";
+import { Booking ,BookingStatus} from "../entities/booking.entity";
 
 export const generateInvoicePdf = (invoice: Invoice, booking: Booking): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
@@ -14,22 +14,37 @@ export const generateInvoicePdf = (invoice: Invoice, booking: Booking): Promise<
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
+    const isCancelled = invoice.status === InvoiceStatus.CANCELLED || booking.status === BookingStatus.CANCELLED;
+
     // Optional logo
     const logoPath = path.resolve("path/to/logo.png");
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, 50, 45, { width: 60 });
     }
 
+    // Watermark if cancelled
+    if (isCancelled) {
+      doc.fontSize(60)
+        .fillColor("red")
+        .opacity(0.3)
+        .rotate(-45, { origin: [300, 300] })
+        .text("CANCELLED", 100, 300, { align: "center" })
+        .rotate(45, { origin: [300, 300] })
+        .opacity(1); // reset opacity
+    }
+
     // Header
     doc
       .fontSize(20)
       .font("Helvetica-Bold")
+      .fillColor("black")
       .text("Booking App", 0, 50, { align: "center" });
 
     doc
       .fontSize(16)
       .font("Helvetica")
-      .text("Booking Invoice", { align: "center" })
+      .fillColor(isCancelled ? "red" : "black")
+      .text(isCancelled ? "Booking Invoice (Cancelled)" : "Booking Invoice", { align: "center" })
       .moveDown(1.5);
 
     doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
@@ -47,9 +62,16 @@ export const generateInvoicePdf = (invoice: Invoice, booking: Booking): Promise<
 
     doc.fillColor("black").font("Helvetica").fontSize(12);
     doc.text(`Invoice Number: ${invoice.invoiceNumber}`);
-    doc.text(`Amount: $${invoice.amount.toFixed(2)}`);
+    doc.text(`Amount: $${Number(invoice.amount).toFixed(2)}`);
     doc.text(`Due Date: ${invoice.dueDate.toDateString()}`);
     doc.text(`Status: ${invoice.status}`);
+
+    if (isCancelled) {
+      doc.moveDown(0.5);
+      doc.fillColor("red").font("Helvetica-Bold")
+        .text("⚠️ This invoice is for a cancelled booking.", { underline: true });
+    }
+
     doc.moveDown(1.5);
 
     // Colored Header - Booking Info
@@ -68,15 +90,14 @@ export const generateInvoicePdf = (invoice: Invoice, booking: Booking): Promise<
     doc.text(`Special Requests: ${booking.specialRequests || "None"}`);
     doc.moveDown(1.5);
 
-    // 🔧 Manual title before table
+    // Booking Summary
     doc.font("Helvetica-Bold").fontSize(14).text("Booking Summary");
     doc.moveDown(0.5);
 
-    // Table
     const table = {
       headers: ["Item", "Description", "Amount"],
       rows: [
-        ["Tour Package", "Standard package incl. hotel & guide", `$${invoice.amount.toFixed(2)}`],
+        ["Tour Package", "Standard package incl. hotel & guide", `$${Number(invoice.amount).toFixed(2)}`],
       ],
     };
 
@@ -85,7 +106,7 @@ export const generateInvoicePdf = (invoice: Invoice, booking: Booking): Promise<
       padding: 5,
       columnSpacing: 10,
       prepareHeader: () => doc.font("Helvetica-Bold").fontSize(12),
-      prepareRow: (row:any, i:number) => doc.font("Helvetica").fontSize(12),
+      prepareRow: (row: any, i: number) => doc.font("Helvetica").fontSize(12),
     });
 
     // Footer
