@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToOne,
+  JoinColumn,
 } from "typeorm";
 import { Booking } from "./booking.entity";
 import { Invoice } from "./invoice.entity";
@@ -48,9 +49,11 @@ export class Payment {
   paymentDetails!: string;
 
   @ManyToOne(() => Booking, (booking) => booking.payments)
+  @JoinColumn({ name: "bookingId" })
   booking!: Booking;
 
   @OneToOne(() => Invoice, (invoice) => invoice.payment)
+  @JoinColumn({ name: "invoiceId" })
   invoice!: Invoice;
 
   @CreateDateColumn()

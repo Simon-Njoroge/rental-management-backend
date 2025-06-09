@@ -5,6 +5,15 @@ import { BookingService } from "../services/booking.service";
 
 const bookingService = new BookingService();
 
+export const getAllBookings = async (req: Request, res: Response) => {
+  try { 
+    const bookings = await bookingService.findAll();
+    res.status(200).json(bookings);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message || "An unexpected error occurred" });
+  }
+};
+
 export const createBooking = async (req: Request, res: Response) => {
 try {
     const booking = await bookingService.create(req.body);

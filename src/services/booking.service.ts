@@ -24,6 +24,12 @@ export class BookingService {
     this.invoiceRepository = AppDataSource.getRepository(Invoice);
   }
 
+  async findAll(): Promise<Booking[]> {
+    return this.bookingRepository.find({
+      relations: ["user", "property", "invoices", "payments"],
+    });
+  }
+
   async create(dto: CreateBookingDto): Promise<{
     success: boolean;
     message: string;

@@ -225,3 +225,20 @@ Content-Type: application/json
 ### cancel booking
 ###
 PUT  http://localhost:3000/api/bookings/cancelbooking/230782d3-2ad5-436d-a75a-ab7b95f17b86
+
+
+### payment
+###
+POST  http://localhost:3000/api/payments/mpesa/initiate
+Content-Type: application/json
+
+{
+  "amount": 850.00,
+  "transactionDate": "2025-06-09T12:00:00.000Z",
+  "reference": "some1-ref",
+  "method": "mpesa",
+  "bookingId": "2e9aca42-78dd-4105-9bbf-e2b807875766",
+  "invoiceId": "b6201b88-d61e-4bdc-85c8-1f6da7740403",
+  "phone": "0717322552",
+  "email": "user@example.com"
+}

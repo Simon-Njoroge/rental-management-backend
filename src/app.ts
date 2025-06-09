@@ -12,6 +12,7 @@ import locationRoutes from "./routes/location.routes";
 import regionRoutes from "./routes/region.routes";
 import propertyimageRoutes from "./routes/property-image.routes";
 import bookingRoutes from './routes/booking.routes';
+import paymentRoutes from './routes/payment.routes';
 
 class App {
   public app: express.Application;
@@ -46,6 +47,7 @@ class App {
     this.app.use("/api/regions", regionRoutes);
     this.app.use("/api/property-images", propertyimageRoutes);
     this.app.use("/api/bookings", bookingRoutes);
+    this.app.use("/api/payments", paymentRoutes);
 
     // Rate limiting
     const limiter = rateLimit({

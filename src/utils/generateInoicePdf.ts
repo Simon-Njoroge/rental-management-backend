@@ -85,9 +85,9 @@ export const generateInvoicePdf = (invoice: Invoice, booking: Booking): Promise<
     doc.moveDown(1.5);
 
     doc.fillColor("black").font("Helvetica").fontSize(12);
-    doc.text(`Start Date: ${booking.startDate.toDateString()}`);
-    doc.text(`End Date: ${booking.endDate.toDateString()}`);
-    doc.text(`Special Requests: ${booking.specialRequests || "None"}`);
+    doc.text(isCancelled?`null`:`Start Date: ${booking.startDate.toDateString()}`);
+    doc.text(isCancelled?`null`:`End Date: ${booking.endDate.toDateString()}`);
+    doc.text(isCancelled?`null`:`Special Requests: ${booking.specialRequests || "None"}`);
     doc.moveDown(1.5);
 
     // Booking Summary
