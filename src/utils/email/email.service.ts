@@ -5,8 +5,7 @@ import { Booking } from "../../entities/booking.entity";
 import { generateInvoicePdf } from '../generateInoicePdf';
 import path from "path";
 import fs from 'fs';
-const templatePath = path.join(__dirname, 'templates', 'password-reset.hbs');
-const source = fs.readFileSync(templatePath, 'utf8');
+import handlebars from 'handlebars';
 
 export class EmailService {
   private transporter: nodemailer.Transporter;
@@ -53,13 +52,15 @@ export class EmailService {
   // Send account creation email
   async sendAccountCreationEmail(email: string, password: string): Promise<void> {
     const appUrl = this.configService.getAppUrl();
-
-    const html = `
-      <h2>Welcome to Our Platform</h2>
-      <p>Email: ${email}</p>
-      <p>Password: ${password}</p>
-      <p><a href="${appUrl}/login">Login here</a></p>
-    `;
+    const templatePath = path.join(__dirname, 'templates', 'account-creation.hbs');
+    const source = fs.readFileSync(templatePath, 'utf8');
+    const template = handlebars.compile(source);
+    const html = template({
+      email,
+      password,
+      loginUrl: `${appUrl}/login`,
+      year: new Date().getFullYear(),
+    });
 
     await this.sendEmail(email, "Your New Account", html);
   }
