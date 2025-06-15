@@ -1,6 +1,6 @@
 import { EmailService } from "../email/email.service"; 
 import { ConfigService } from "../../config/service"; 
-
+import handlebars from "handlebars";
 const configService = new ConfigService();
 const emailService = new EmailService(configService);
 

@@ -3,6 +3,11 @@ import { ConfigService } from "../../config/service";
 import { Invoice } from "../../entities/invoice.entity";
 import { Booking } from "../../entities/booking.entity";
 import { generateInvoicePdf } from '../generateInoicePdf';
+import path from "path";
+import fs from 'fs';
+const templatePath = path.join(__dirname, 'templates', 'password-reset.hbs');
+const source = fs.readFileSync(templatePath, 'utf8');
+
 export class EmailService {
   private transporter: nodemailer.Transporter;
 
