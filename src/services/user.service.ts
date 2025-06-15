@@ -16,11 +16,11 @@ export class UserService {
 
     // no returning of user password
   
-    this.userRepository.metadata.columns
-    .filter(column => column.propertyName === 'password')
-    .forEach(column => {
-      column.isSelect = false; 
-    });
+    // this.userRepository.metadata.columns
+    // .filter(column => column.propertyName === 'password')
+    // .forEach(column => {
+    //   column.isSelect = false; 
+    // });
   }
 
 async create(createUserDto: CreateUserDto): Promise<{ success: boolean; message: string; user: User ,timestamp: string }> {

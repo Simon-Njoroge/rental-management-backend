@@ -38,6 +38,13 @@ class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
+     const limiter = rateLimit({
+      windowMs: 0.2 * 60 * 1000, // 12 seconds
+      max: 2, // limit each IP to 2 requests per windowMs
+    });
+
+    this.app.use(limiter);
+
     //routers
     this.app.use("/api/users", userRoutes);
     this.app.use("/api/properties", propertyRoutes);
@@ -49,12 +56,8 @@ class App {
     this.app.use("/api/bookings", bookingRoutes);
     this.app.use("/api/payments", paymentRoutes);
 
-    // Rate limiting
-    const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 10, // limit each IP to 100 requests per windowMs
-    });
-    this.app.use(limiter);
+ 
+   
   }
 
   private async initializeDatabase() {
