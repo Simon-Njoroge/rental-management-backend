@@ -35,6 +35,7 @@ export class Notification {
   actionUrl!: string | null;
 
   @ManyToOne(() => User, (user) => user.notifications)
+  
   user!: User;
 
   @CreateDateColumn()

@@ -1,5 +1,5 @@
 // create-user.dto.ts
-import { IsString, IsEmail, IsOptional, IsBoolean } from "class-validator";
+import { IsString, IsEmail, IsOptional, IsBoolean, IsUUID } from "class-validator";
 
 export class CreateUserDto {
   @IsEmail()
@@ -40,4 +40,8 @@ export class CreateUserDto {
   @IsOptional()
   @IsBoolean()
   fromGoogle?: boolean; 
+
+  @IsUUID()
+  @IsOptional()
+  subscriptionPlanId?: string;
 }

@@ -13,7 +13,10 @@ import regionRoutes from "./routes/region.routes";
 import propertyimageRoutes from "./routes/property-image.routes";
 import bookingRoutes from './routes/booking.routes';
 import paymentRoutes from './routes/payment.routes';
-
+import reviwRoutes from './routes/review.routes';
+import supportticketRoutes from './routes/support-ticket.routes';
+import subscriptionplanRoutes from './routes/subscription-plan.routes';
+import maintenanceRoutes from './routes/maintenance.routes';
 class App {
   public app: express.Application;
   public port: number;
@@ -39,8 +42,8 @@ class App {
     this.app.use(express.urlencoded({ extended: true }));
 
      const limiter = rateLimit({
-      windowMs: 0.2 * 60 * 1000, // 12 seconds
-      max: 2, // limit each IP to 2 requests per windowMs
+      windowMs: 15 * 60 * 1000, // 15 minuts
+      max: 100, // limit each IP to 100 requests per windowMs
     });
 
     this.app.use(limiter);
@@ -55,6 +58,10 @@ class App {
     this.app.use("/api/property-images", propertyimageRoutes);
     this.app.use("/api/bookings", bookingRoutes);
     this.app.use("/api/payments", paymentRoutes);
+    this.app.use("/api/reviews", reviwRoutes);
+    this.app.use("/api/support-tickets", supportticketRoutes);
+    this.app.use("/api/subscription-plans", subscriptionplanRoutes);
+    this.app.use("/api/maintenance-requests", maintenanceRoutes);
 
  
    

@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { User } from "./user.entity";
 import { Property } from "./property.entity";
@@ -52,9 +53,11 @@ export class Maintenance {
   resolutionNotes!: object | null;
 
   @ManyToOne(() => User, (user) => user.maintenanceRequests)
+  @JoinColumn({ name: "userId" })
   user!: User;
 
   @ManyToOne(() => Property, (property) => property.maintenanceRequests)
+  @JoinColumn({ name: "propertyId" })
   property!: Property;
 
   @CreateDateColumn()

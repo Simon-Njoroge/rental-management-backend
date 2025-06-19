@@ -1,153 +1,100 @@
-import {
-  Injectable,
-  NotFoundException,
-  InternalServerErrorException,
-} from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import {
-  Maintenance,
-  MaintenanceStatus,
-  MaintenancePriority,
-} from "../entities/maintenance.entity";
+import { Maintenance } from "../entities/maintenance.entity";
 import { CreateMaintenanceDto } from "../dtos/maintenance/CreateSessionDto";
+import { AppDataSource } from "../config/data-source";
 import { UpdateMaintenanceDto } from "../dtos/maintenance/UpdateDto";
-import { UserService } from "./user.service";
-import { PropertyService } from "./property.service";
-import { NotificationService } from "./notification.service";
-import { NotificationType } from "../entities/notification.entity";
+import { User } from "../entities/user.entity";
+import { Property } from "../entities/property.entity";
+import { Logger } from "../utils/logger";
 
-@Injectable()
+
 export class MaintenanceService {
-  constructor(
-    @InjectRepository(Maintenance)
-    private readonly maintenanceRepository: Repository<Maintenance>,
-    private readonly userService: UserService,
-    private readonly propertyService: PropertyService,
-    private readonly notificationService: NotificationService,
-  ) {}
+  private maintenanceRepository: Repository<Maintenance>;
 
-  async create(
-    createMaintenanceDto: CreateMaintenanceDto,
-    userId: string,
-    propertyId: string,
+  constructor() {
+    this.maintenanceRepository = AppDataSource.getRepository(Maintenance);
+  }
+
+  async createMaintenance(
+    createMaintenanceDto: CreateMaintenanceDto
   ): Promise<Maintenance> {
     try {
-      const [user, property] = await Promise.all([
-        this.userService.findById(userId),
-        this.propertyService.findById(propertyId),
-      ]);
-
+      const user = await AppDataSource.getRepository(User).findOneBy({ id: createMaintenanceDto.userId });
       if (!user) {
-        throw new NotFoundException("User not found");
+        throw new Error("User not found");
       }
+      const property = await AppDataSource.getRepository(Property).findOneBy({ id: createMaintenanceDto.propertyId });
       if (!property) {
-        throw new NotFoundException("Property not found");
+        throw new Error("Property not found");
       }
-
-      const maintenance = this.maintenanceRepository.create({
-        ...createMaintenanceDto,
-        user,
-        property,
-        status: MaintenanceStatus.PENDING,
-        priority: createMaintenanceDto.priority || MaintenancePriority.MEDIUM,
-      });
-
-      await this.maintenanceRepository.save(maintenance);
-
-      // Notify property agent
-      if (property.agent?.id) {
-        await this.notificationService.sendNotification(
-          property.agent.id,
-          "New Maintenance Request",
-          `New request for ${property.title}: ${createMaintenanceDto.title}`,
-          NotificationType.MAINTENANCE,
-        );
-      }
-
-      return maintenance;
+      const maintenance = this.maintenanceRepository.create(createMaintenanceDto);
+      maintenance.user = user;
+      maintenance.property = property;
+      return await this.maintenanceRepository.save(maintenance);
     } catch (error) {
-      this.handleError(error, "createMaintenance");
+      Logger.error("Error creating maintenance request", error);
+      throw new Error("Failed to create maintenance request");
     }
   }
 
-  async updateStatus(
+  async getAllMaintenances(): Promise<Maintenance[]> {
+    try {
+      return await this.maintenanceRepository.find({
+        relations: ["user", "property"],
+        order: { createdAt: "DESC" },
+      });
+    } catch (error) {
+      Logger.error("Error fetching all maintenance requests", error);
+      throw new Error("Failed to fetch maintenance requests");
+    }
+  }
+
+  async getMaintenanceById(id: string): Promise<Maintenance | null> {
+    try {
+      return await this.maintenanceRepository.findOneBy({ id });
+    } catch (error) {
+      Logger.error("Error fetching maintenance request", error);
+      throw new Error("Failed to fetch maintenance request");
+    }
+  }
+
+  async updateMaintenance(
     id: string,
-    status: MaintenanceStatus,
-    resolutionNotes?: Record<string, any>,
-  ): Promise<Maintenance> {
+    updateMaintenanceDto: UpdateMaintenanceDto
+  ): Promise<Maintenance | null> {
     try {
-      const maintenance = await this.maintenanceRepository.findOne({
-        where: { id },
-        relations: ["user", "property"],
-      });
-
-      if (!maintenance) {
-        throw new NotFoundException("Maintenance request not found");
+      const existingMaintenance = await this.getMaintenanceById(id);
+      if (!existingMaintenance) {
+        throw new Error("Maintenance request not found");
       }
-
-      maintenance.status = status;
-      if (resolutionNotes) {
-        maintenance.resolutionNotes = resolutionNotes;
+      if (updateMaintenanceDto.userId) {
+        const user = await AppDataSource.getRepository(User).findOneBy({ id: updateMaintenanceDto.userId });
+        if (!user) {
+          throw new Error("User not found");
+        }
+        existingMaintenance.user = user;
       }
-
-      await this.maintenanceRepository.save(maintenance);
-
-      // Notify tenant/user
-      if (maintenance.user?.id) {
-        await this.notificationService.sendNotification(
-          maintenance.user.id,
-          "Maintenance Update",
-          `Your request for ${maintenance.property.title} is now ${status}`,
-          NotificationType.MAINTENANCE,
-        );
+      if (updateMaintenanceDto.propertyId) {
+        const property = await AppDataSource.getRepository(Property).findOneBy({ id: updateMaintenanceDto.propertyId });
+        if (!property) {
+          throw new Error("Property not found");
+        }
+        existingMaintenance.property = property;
       }
-
-      return maintenance;
+      await this.maintenanceRepository.update(id, updateMaintenanceDto);
+      return this.getMaintenanceById(id);
     } catch (error) {
-      this.handleError(error, "updateMaintenanceStatus");
+      Logger.error("Error updating maintenance request", error);
+      throw new Error("Failed to update maintenance request");
     }
   }
 
-  private handleError(error: unknown, context: string): never {
-    console.error(`Error in MaintenanceService.${context}:`, error);
-    throw new InternalServerErrorException(
-      "An error occurred. Please try again later.",
-    );
-  }
-
-  async findAll(): Promise<Maintenance[]> {
+  async deleteMaintenance(id: string): Promise<void> {
     try {
-      return await this.maintenanceRepository.find({
-        relations: ["user", "property"],
-        order: { createdAt: "DESC" },
-      });
+      await this.maintenanceRepository.delete(id);
     } catch (error) {
-      this.handleError(error, "findAll");
-    }
-  }
-
-  async findByProperty(propertyId: string): Promise<Maintenance[]> {
-    try {
-      return await this.maintenanceRepository.find({
-        where: { property: { id: propertyId } },
-        relations: ["user", "property"],
-        order: { createdAt: "DESC" },
-      });
-    } catch (error) {
-      this.handleError(error, "findByProperty");
-    }
-  }
-
-  async findByUser(userId: string): Promise<Maintenance[]> {
-    try {
-      return await this.maintenanceRepository.find({
-        where: { user: { id: userId } },
-        relations: ["user", "property"],
-        order: { createdAt: "DESC" },
-      });
-    } catch (error) {
-      this.handleError(error, "findByUser");
+      Logger.error("Error deleting maintenance request", error);
+      throw new Error("Failed to delete maintenance request");
     }
   }
 }

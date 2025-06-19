@@ -1,0 +1,19 @@
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
+  <div style="text-align: center;">
+    <img src="https://cdn-icons-png.flaticon.com/512/1170/1170576.png" alt="Invoice" width="60" style="margin-bottom: 16px;" />
+    <h2 style="color: #4CAF50;">Your Booking Invoice</h2>
+  </div>
+  <p style="font-size: 16px;">Hello {{customerName}},</p>
+  <p style="font-size: 16px;">
+    Thank you for your booking! Please find your invoice attached to this email.
+  </p>
+  <ul style="font-size: 16px; background: #fff; padding: 16px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+    <li><strong>Invoice Number:</strong> {{invoiceNumber}}</li>
+    <li><strong>Booking Reference:</strong> {{bookingReference}}</li>
+    <li><strong>Amount:</strong> {{amount}}</li>
+    <li><strong>Date:</strong> {{date}}</li>
+  </ul>
+  <p style="font-size: 14px; color: #888;">If you have any questions, please reply to this email.</p>
+  <hr style="margin: 32px 0 16px 0; border: none; border-top: 1px solid #eee;">
+  <p style="font-size: 12px; color: #bbb; text-align: center;">&copy; {{year}} Booking App. All rights reserved.</p>
+</div>

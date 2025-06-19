@@ -2,6 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  JoinColumn,
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
@@ -28,8 +29,9 @@ export class SupportTicket {
   @Column({ type: "enum", enum: TicketStatus, default: TicketStatus.OPEN })
   status!: TicketStatus;
 
-//   @ManyToOne(() => User, (user) => user.tickets)
-//   user!: User;
+  @ManyToOne(() => User, (user) => user.tickets)
+  @JoinColumn({ name: "userId" })
+  user!: User;
 
   @CreateDateColumn()
   createdAt!: Date;

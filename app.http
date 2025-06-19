@@ -30,7 +30,7 @@ POST http://localhost:3000/api/properties
 Content-Type: application/json
 
 {
-  "title": "STUDIO APARTMENT3",
+  "title": "STUDIO APARTMENT13",
   "description": "A spacious and modern family house located in a quiet neighborhood.",
   "address": "123 Palm Street, Karen, Nairobi",
   "price": 35000000,
@@ -209,22 +209,53 @@ DELETE http://localhost:3000/api/property-images/60c72b2f9b1d4c001c8e4e3a
 ### Booking
 ###
 GET http://localhost:3000/api/bookings
+
+### get booking by id
+###
+GET http://localhost:3000/api/bookings/2e9aca42-78dd-4105-9bbf-e2b807875766
+
+### get booking by user id
+###
+GET http://localhost:3000/api/bookings/user/6f2e1f0a-17cd-4ea3-acbd-d8e39c293f24
+
+### update booking status
+###
+PUT http://localhost:3000/api/bookings/2e9aca42-78dd-4105-9bbf-e2b807875766/status
+Content-Type: application/json
+
+{
+  "status": "confirmed"
+}
+
+
+
+### book property
 ###
 POST http://localhost:3000/api/bookings
 Content-Type: application/json
 
 {
-  "userId": "d27bb5aa-d1dc-4974-9182-25c6658ef361",
-  "propertyId": "31a50d62-7f35-4fa1-90af-e80eeb52ca52",
-  "startDate": "2025-06-10",
-  "endDate": "2025-06-15",
-  "totalAmount": 1000.00,
-  "specialRequests": "Please provide extra towels"
+  "userId": "6f2e1f0a-17cd-4ea3-acbd-d8e39c293f24",
+  "propertyId": "d7e4c663-73c8-49c2-9d5f-bd047256f564",
+  "startDate": "2025-06-01",
+  "endDate": "2025-06-30",
+  "totalAmount": 2000.00,
+  "specialRequests": {
+    "checkInTime": "14:00",
+    "checkOutTime": "12:00",
+    "additionalGuests": 2,
+    "notes": "Please prepare the room with extra pillows."
+  }
 }
 
 ### cancel booking
 ###
 PUT  http://localhost:3000/api/bookings/cancelbooking/230782d3-2ad5-436d-a75a-ab7b95f17b86
+
+
+### delete booking
+###
+DELETE http://localhost:3000/api/bookings/230782d3-2ad5-436d-a75a-ab7b95f17b86
 
 
 ### payment
@@ -242,3 +273,153 @@ Content-Type: application/json
   "phone": "0717322552",
   "email": "user@example.com"
 }
+
+
+
+### reviews
+### get review by property id
+###
+GET http://localhost:3000/api/reviews/property/d7e4c663-73c8-49c2-9d5f-bd047256f564
+
+### get review by user id
+###
+GET http://localhost:3000/api/reviews/user/6f2e1f0a-17cd-4ea3-acbd-d8e39c293f24
+
+### post review
+###
+POST http://localhost:3000/api/reviews
+Content-Type: application/json
+
+{
+  "propertyId": "d7e4c663-73c8-49c2-9d5f-bd047256f564",
+  "userId": "6f2e1f0a-17cd-4ea3-acbd-d8e39c293f24",
+  "rating": 4.5,
+  "comment": "Great place to stay, very comfortable and clean."
+}
+
+### update review
+###
+PUT http://localhost:3000/api/reviews/50f4feb1-fb12-447d-8c99-2b673b724b4f/user/6f2e1f0a-17cd-4ea3-acbd-d8e39c293f24
+Content-Type: application/json
+
+{
+  "rating": 4.0,
+  "comment": "Updated review comment."
+}
+
+### delete review
+###
+DELETE http://localhost:3000/api/reviews/50f4feb1-fb12-447d-8c99-2b673b724b4f
+
+
+
+
+### suport ticket
+### get all tickets
+###
+GET http://localhost:3000/api/support-tickets
+### get ticket by id
+###
+GET http://localhost:3000/api/support-tickets/88f146ae-96e4-4188-b956-bb52ba59c6be
+
+### get tickets by user id
+###
+GET http://localhost:3000/api/support-tickets/user/6f2e1f0a-17cd-4ea3-acbd-d8e39c293f24
+### create ticket
+###
+POST http://localhost:3000/api/support-tickets
+Content-Type: application/json
+
+{
+  "userId": "6f2e1f0a-17cd-4ea3-acbd-d8e39c293f24",
+  "subject": "Issue with booking",
+  "message": "I have an issue with my recent booking, please assist."
+}
+
+### update ticket
+###
+PUT http://localhost:3000/api/support-tickets/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+
+{
+  "subject": "Updated subject",
+  "description": "Updated description of the issue.",
+  "status": "in-progress"
+}
+
+### delete ticket
+###
+DELETE http://localhost:3000/api/support-tickets/60c72b2f9b1d4c001c8e4e3a
+
+
+
+
+### subscriptions plan
+### get all subscriptions
+###
+GET http://localhost:3000/api/subscription-plans
+
+### get subscription by id
+###
+GET http://localhost:3000/api/subscription-plans/60c72b2f9b1d4c001c8e4e3a
+### create subscription plan
+###
+POST http://localhost:3000/api/subscription-plans
+Content-Type: application/json
+
+{
+  "name": "Premium Plan",
+  "price": 1000,
+   "durationInDays": 365
+ 
+}
+
+### update subscription plan
+###
+PUT http://localhost:3000/api/subscription-plans/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+
+{
+  "name": "Premium Plan Updated",
+  "price": 1200,
+  "durationInDays": 365
+}
+### delete subscription plan
+###
+DELETE http://localhost:3000/api/subscription-plans/60c72b2f9b1d4c001c8e4e3a
+
+
+
+### maintenance
+### get all maintenance requests
+###
+GET http://localhost:3000/api/maintenance-requests
+### get maintenance request by id
+###
+GET http://localhost:3000/api/maintenance-requests/60c72b2f
+### create maintenance request
+###
+POST http://localhost:3000/api/maintenance-requests
+Content-Type: application/json
+
+{
+  "title": "Leaking Faucet",
+  "description": "The kitchen faucet is leaking and needs repair.",
+  "status": "pending",
+  "priority": "high",
+  "resolution": "Pending",
+  "propertyId": "d7e4c663-73c8-49c2-9d5f-bd047256f564",
+  "userId": "6f2e1f0a-17cd-4ea3-acbd-d8e39c293f24"
+}
+### update maintenance request
+###
+PUT http://localhost:3000/api/maintenance-requests/60c72b2f9b1d4c001c8e4e3a
+Content-Type: application/json
+
+{
+  "issueDescription": "Updated issue description.",
+  "status": "in-progress"
+}
+### delete maintenance request
+###
+DELETE http://localhost:3000/api/maintenance-requests/60c72b2f9b1d4c001c8e4e3a

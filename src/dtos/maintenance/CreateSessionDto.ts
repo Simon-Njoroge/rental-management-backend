@@ -24,4 +24,10 @@ export class CreateMaintenanceDto {
 
   @IsOptional()
   resolutionNotes?: object | null;
+
+  @IsNotEmpty()
+  userId!: string;
+  
+  @IsNotEmpty()
+  propertyId!: string;
 }

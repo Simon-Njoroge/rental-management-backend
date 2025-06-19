@@ -26,6 +26,7 @@
     "@nestjs/typeorm": "^11.0.0",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.21",
+    "africastalking": "^0.7.3",
     "amqplib": "^0.10.8",
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",

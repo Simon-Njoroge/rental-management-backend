@@ -8,6 +8,7 @@ import {
   BeforeInsert,
   BeforeUpdate,
   ManyToOne,
+  JoinColumn,
   getRepository,
 } from "typeorm";
 import * as bcrypt from "bcryptjs";
@@ -57,7 +58,7 @@ export class User {
   @Column()
   location!: string;
 
-  @Column("text", { nullable: true })
+  @Column("text", { nullable: true ,select: false})
   password!: string | null;
 
   // OAuth Identifiers
@@ -114,11 +115,12 @@ export class User {
   // @OneToMany(() => Session, (session) => session.user)
   // sessions!: Session[];
 
-  // @ManyToOne(() => SubscriptionPlan, (plan) => plan.users, { nullable: true, eager: true })
-  // subscriptionPlan?: SubscriptionPlan;
+  @ManyToOne(() => SubscriptionPlan, (plan) => plan.users, { nullable: true, eager: true })
+  @JoinColumn({ name: "subscriptionPlanId" })
+  subscriptionPlan?: SubscriptionPlan;
 
-  // @OneToMany(() => SupportTicket, (ticket) => ticket.user)
-  // tickets!: SupportTicket[];
+  @OneToMany(() => SupportTicket, (ticket) => ticket.user)
+  tickets!: SupportTicket[];
 
   // Timestamps
   @CreateDateColumn()

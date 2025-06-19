@@ -184,4 +184,84 @@ if (invoice) {
   };
 }
 
+
+// get booking by id
+async findById(bookingId: string): Promise<Booking> {
+  const booking = await this.bookingRepository.findOne({
+    where: { id: bookingId },
+    relations: ["user", "property", "invoices", "payments"],
+  });
+
+  if (!booking) {
+    throw createHttpError(404, "Booking not found");
+  }
+
+  return booking;
+}
+
+// get bookings by user id
+async findByUserId(userId: string): Promise<Booking[]> {
+  const user = await this.userRepository.findOneByOrFail({ id: userId });
+
+  const bookings = await this.bookingRepository.find({
+    where: { user: { id: user.id } },
+    relations: ["property", "invoices", "payments"],
+  });
+
+  if (bookings.length === 0) {
+    throw createHttpError(404, "No bookings found for this user");
+  }
+
+  return bookings;
+}
+
+// delete booking
+async delete(bookingId: string): Promise<{
+  success: boolean;
+  message: string;
+  booking: Booking | null;
+  timestamp: string;
+}> {
+  const booking = await this.bookingRepository.findOne({
+    where: { id: bookingId },
+    relations: ["property", "user"],
+  });
+
+  if (!booking) {
+    throw createHttpError(404, "Booking not found");
+  }
+
+  await this.bookingRepository.remove(booking);
+
+  Logger.info(`Booking with ID: ${booking.id} has been deleted`);
+
+  return {
+    success: true,
+    message: "Booking deleted successfully",
+    booking: null,
+    timestamp: new Date().toISOString(),
+  };
+}
+  async updateStatus(
+    bookingId: string,
+    status: BookingStatus
+  ): Promise<Booking> {
+    const booking = await this.bookingRepository.findOne({
+      where: { id: bookingId },
+      relations: ["property", "user"],
+    });
+
+    if (!booking) {
+      throw createHttpError(404, "Booking not found");
+    }
+
+    booking.status = status;
+    const updatedBooking = await this.bookingRepository.save(booking);
+
+    Logger.info(
+      `Booking with ID: ${updatedBooking.id} status updated to ${status}`
+    );
+
+    return updatedBooking;
+  }
 }

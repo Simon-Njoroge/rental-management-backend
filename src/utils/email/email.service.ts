@@ -94,13 +94,35 @@ export class EmailService {
   }
 
   async sendInvoiceWithAttachment(email: string, invoice: Invoice, booking: Booking): Promise<void> {
-  const pdfBuffer = await  generateInvoicePdf(invoice, booking);
 
+  const fileName =`Invoice-${invoice.invoiceNumber}.pdf`;
+  const savedPath=path.join(__dirname, 'invoices', fileName);
+  // Generate PDF and save it to the specified path
+  if (!fs.existsSync(path.join(__dirname, 'invoices'))) {
+    fs.mkdirSync(path.join(__dirname, 'invoices'), { recursive: true });
+  }
+
+  const pdfBuffer = await  generateInvoicePdf(invoice, booking,savedPath);
+
+  const templatePath = path.join(__dirname, 'templates', 'invoice-email.hbs');
+  const source = fs.readFileSync(templatePath, 'utf8');
+  const template = handlebars.compile(source);
+
+  // Prepare data for the template
+  const html = template({
+    customerName: booking.user?.firstname || email,
+    invoiceNumber: invoice.invoiceNumber,
+    bookingReference: booking.id || booking.id,
+    amount: invoice.amount,
+    
+    date: new Date().toLocaleDateString(),
+    year: new Date().getFullYear(),
+  });
   await this.transporter.sendMail({
-    from: '"Booking App" <no-reply@bookingapp.com>',
+    from: '"rhms" <no-reply@bookingapp.com>',
     to: email,
     subject: "Your Booking Invoice",
-    text: `Please find attached the invoice for your booking.`,
+    html,
     attachments: [
       {
         filename: `Invoice-${invoice.invoiceNumber}.pdf`,

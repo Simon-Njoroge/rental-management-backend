@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
+  JoinColumn,
 } from "typeorm";
 import { User } from "./user.entity";
 
@@ -20,6 +21,6 @@ export class SubscriptionPlan {
   @Column()
   durationInDays!: number;
 
-//   @OneToMany(() => User, (user) => user.subscriptionPlan)
-//   users!: User[];
+  @OneToMany(() => User, (user) => user.subscriptionPlan)
+  users!: User[];
 }
