@@ -17,6 +17,7 @@ import reviwRoutes from './routes/review.routes';
 import supportticketRoutes from './routes/support-ticket.routes';
 import subscriptionplanRoutes from './routes/subscription-plan.routes';
 import maintenanceRoutes from './routes/maintenance.routes';
+import authRoutes from './routes/auth.routes';
 class App {
   public app: express.Application;
   public port: number;
@@ -62,6 +63,7 @@ class App {
     this.app.use("/api/support-tickets", supportticketRoutes);
     this.app.use("/api/subscription-plans", subscriptionplanRoutes);
     this.app.use("/api/maintenance-requests", maintenanceRoutes);
+    this.app.use("/api/auth", authRoutes);
 
  
    

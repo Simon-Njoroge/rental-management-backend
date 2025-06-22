@@ -15,10 +15,7 @@ export class AgentProfile {
   @Column()
   bio!: string;
 
-  @Column({ nullable: true })
-  profileImage!: string;
-
   @OneToOne(() => User)
-  @JoinColumn()
+  @JoinColumn({name: 'userId'})
   user!: User;
 }

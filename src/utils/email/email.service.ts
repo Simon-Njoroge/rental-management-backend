@@ -3,10 +3,11 @@ import { ConfigService } from "../../config/service";
 import { Invoice } from "../../entities/invoice.entity";
 import { Booking } from "../../entities/booking.entity";
 import { generateInvoicePdf } from '../generateInoicePdf';
+import { Session } from "../../entities/session.entity";
 import path from "path";
 import fs from 'fs';
 import handlebars from 'handlebars';
-
+import { User } from "../../entities/user.entity";
 export class EmailService {
   private transporter: nodemailer.Transporter;
 
@@ -91,6 +92,27 @@ export class EmailService {
     `;
 
     await this.sendEmail(email, "Password Reset Request", html);
+  }
+
+  //new signin alert
+  async sendNewSigninNotification(email:string,user:User,session:Session):Promise<void>{
+    const appUrl = this.configService.getAppUrl();
+    const templatePath = path.join(__dirname, 'templates', 'signin.hbs');
+    const source = fs.readFileSync(templatePath, 'utf8');
+    const template = handlebars.compile(source);
+    const html = template({
+      email,
+      name:user.username,
+      device:session.userAgent,
+      location:"location not found",
+      dateTime: new Date().toLocaleString(),
+      reseturl: `${appUrl}/login`,
+      expiryHours: "2hrs",
+      
+    });
+
+    await this.sendEmail(email, "New Device Sign-in Alert", html);
+
   }
 
   async sendInvoiceWithAttachment(email: string, invoice: Invoice, booking: Booking): Promise<void> {

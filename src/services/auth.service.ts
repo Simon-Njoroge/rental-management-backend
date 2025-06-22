@@ -1,72 +1,257 @@
-import { Injectable } from "@nestjs/common";
-import { UserService } from "./user.service";
-import { EmailService } from "../utils/email/email.service";
-import { AuthProviderService } from "./auth-provider.service";
+import { Repository } from "typeorm";
+import { AppDataSource } from "../config/data-source";
+import { User } from "../entities/user.entity";
+import { Session } from "../entities/session.entity";
+import { createHttpError } from "../utils/errors";
+import { Logger } from "../utils/logger";
 import * as bcrypt from "bcryptjs";
-import { randomBytes } from "crypto";
-
-@Injectable()
+import { Response, Request } from "express";
+import { v4 as uuidv4 } from "uuid";
+import { LoginDto } from "../dtos/users/auth.dto";
+import jwt from "jsonwebtoken";
+import { sendNewSigninEmail } from "../utils/email/newsignin";
+// import  imail CreateSessionDto } from "../dtos/session/CreateSessionDto";
 export class AuthService {
-  constructor(
-    private userService: UserService,
-    private emailService: EmailService,
-    private authProviderService: AuthProviderService,
-  ) {}
+  private userRepository: Repository<User>;
+  private sessionRepository: Repository<Session>;
+ 
+  constructor() {
+    this.userRepository = AppDataSource.getRepository(User);
+    this.sessionRepository = AppDataSource.getRepository(Session);
+  }
 
-  async handleGoogleRedirect(googleUser: any) {
-    const { id: providerId, email, name } = googleUser;
+  private generateTokens(
+    user: User,
+    sessionId: string
+  ): { accessToken: string; refreshToken: string } {
+    const payload = { sub: user.id, sessionId, role: user.role };
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET!, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET!, {
+      expiresIn: "7d",
+    });
+    return { accessToken, refreshToken };
+  }
 
-    // 1. Check if provider ID is already linked
-    const existing = await this.authProviderService.findByProviderId(
-      "google",
-      providerId,
-    );
-    if (existing) {
+  async login(
+    loginDto: LoginDto,
+    req: Request,
+    res: Response
+  ): Promise<{
+    success: boolean;
+    message: string;
+    requiresConfirmation?: boolean;
+  }> {
+    const user = await this.userRepository.findOneOrFail({
+      where: { email: loginDto.email },
+      select: ["id", "email", "password", "isVerified", "role"],
+    });
+
+    if (!user?.email) {
+      throw createHttpError(401, "user with email not found");
+    }
+
+    if (!user.password) {
+      throw createHttpError(401, "User password not set");
+    }
+
+    // const isPasswordValid = await bcrypt.compare(
+    //   loginDto.password,
+    //   user.password
+    // );
+
+    // if (!isPasswordValid) {
+    //   throw createHttpError(401, "Invalid  password");
+    // }
+    // console.log('Password valid:', isPasswordValid);
+    // if (!user.isVerified) {
+    //   throw createHttpError(403, "User is not verified");
+    // }
+
+    //check if user is logged in another device
+    const existingSession = await this.sessionRepository.findOne({
+      where: { user: { id: user.id } },
+      relations: ["user"],
+    });
+
+   
+    const forceLogin = req.body.forceLogin === true;
+
+    if (existingSession && !forceLogin) {
+      // Do NOT remove session or create a new one yet
       return {
-        message: "Login successful",
-        user: existing.user,
-        token: "jwt-token-here",
+        success: false,
+        message:
+          "You are already logged in on another device. Do you want to continue here and log out from the other device?",
+        requiresConfirmation: true,
+      };
+    }
+     
+    if (existingSession) {
+      // If user is already logged in, remove the existing session
+      await this.sessionRepository.remove(existingSession);
+      Logger.info(
+        `User ${user.email} logged in from a new device. Previous session removed.`
+      );
+
+      // Optionally, you can also clear cookies or perform other actions here
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+      // If you want to return a message indicating the previous session was removed
+      // you can do so here
+      // but in this case, we just return a success message
+      // and proceed to create a new session
+      //create a new session
+      const session = await this.sessionRepository.create({
+        id: uuidv4(),
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"] || "unknown",
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+      session.user = user;
+      await this.sessionRepository.save(session);
+      await sendNewSigninEmail(user.email, user, session);
+      const { accessToken, refreshToken } = this.generateTokens(
+        user,
+        session.id
+      );
+
+      res.cookie("acessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "development",
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000,
+      });
+
+      res.cookie("resfreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "development",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return {
+        success: true,
+        message: existingSession
+          ? "User logged in from a new device. Previous session removed and new session created."
+          : "User logged in and session created.",
       };
     }
 
-    // 2. Find user by email (if already signed up via email/password)
-    let user = await this.userService.findByEmail(email);
+    const session = await this.sessionRepository.create({
+      id: uuidv4(),
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"] || "unknown",
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+    session.user = user;
+    await this.sessionRepository.save(session);
 
-    // 3. If not, create new user with random password
-    if (!user) {
-      const randomPassword = randomBytes(8).toString("hex");
-      const hashed = await bcrypt.hash(randomPassword, 12);
+    const { accessToken, refreshToken } = this.generateTokens(user, session.id);
 
-      user = await this.userService.create({
-        email,
-        fullName: name,
-        password: hashed,
-        isVerified: true,
-        fromGoogle: true,
-        nationalId: "N/A",
-        username: "user_" + Date.now(),
-        phoneNumber: "0000000000",
-        location: "Unknown",
-      });
+    res.cookie("acessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "development",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+    });
 
-      await this.emailService.sendWelcomeEmail(user.email, name);
-      await this.emailService.sendPasswordResetEmail(
-        user.email,
-        randomPassword,
-      );
-    }
+    res.cookie("resfreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "development",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
-    // 4. Link Google provider to user
-    await this.authProviderService.linkProvider(user.id, "google", providerId);
-
+    Logger.info(`User ${user.email} logged in. Session: ${session.id}`);
     return {
-      message: "Account linked and signed in",
-      user,
-      token: "jwt-token-here",
+      success: true,
+      message: "login succesful",
     };
   }
 
-  async completeProfile(userId: string, profileData: any) {
-    return this.userService.update(userId, profileData);
+  async logout(sessionId: string, res: Response): Promise<{ message: string }> {
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId },
+    });
+
+    if (session) {
+      await this.sessionRepository.remove(session);
+    }
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    Logger.info(`User logged out. Session: ${sessionId}`);
+    return {
+      message: "Logout successful",
+    };
+  }
+
+  async refreshTokens(
+    req: Request,
+    res: Response
+  ): Promise<{ success: boolean; message: string }> {
+    const refreshToken = req.cookies["refreshToken"];
+    if (!refreshToken) {
+      throw createHttpError(401, "Refresh token is missing");
+    }
+    let payload: any;
+    try {
+      payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
+    } catch (error) {
+      throw createHttpError(401, "Invalid refresh token");
+    }
+    const session = await this.sessionRepository.findOne({
+      where: { id: payload.sessionId },
+      relations: ["user"],
+    });
+    if (!session) {
+      throw createHttpError(401, "Session not found");
+    }
+    const user = session.user;
+    const { accessToken, refreshToken: newRefreshToken } = this.generateTokens(
+      user,
+      session.id
+    );
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "development",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+    });
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "development",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    Logger.info(`User ${user.email} refreshed tokens. Session: ${session.id}`);
+    return {
+      success: true,
+      message: "Tokens refreshed successfully",
+    };
+  }
+
+  async getCurrentUser(userId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ["id", "email", "role", "isVerified"],
+      relations: [
+        "bookings",
+        "properties",
+        "reviews",
+        "supportTickets",
+        "maintenanceRequests",
+        "notifications",
+      ],
+    });
+
+    if (!user) {
+      throw createHttpError(404, "User not found");
+    }
+
+    return user;
   }
 }

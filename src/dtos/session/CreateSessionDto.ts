@@ -2,9 +2,12 @@
 import { IsUUID, IsString, IsDateString, IsNotEmpty } from "class-validator";
 
 export class CreateSessionDto {
-  @IsNotEmpty()
-  @IsString()
-  token!: string;
+  @IsUUID()
+  id!:string;
+
+  // @IsNotEmpty()
+  // @IsString()
+  // token?: string;
 
   @IsNotEmpty()
   @IsString()

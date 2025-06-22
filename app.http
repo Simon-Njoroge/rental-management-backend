@@ -1,4 +1,32 @@
 
+### authentication
+### login
+
+###
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "mukiri.16030@students.kyu.ac.ke",
+  "password": "aF(Jx^)6#x5e",
+  "forceLogin": true
+}
+
+### logout
+
+###
+POST http://localhost:3000/api/auth/logout/2efc06ef-09aa-493f-8e30-934cf726a7ca
+
+### refresh token
+
+###
+POST http://localhost:3000/api/auth/refresh-tokens
+Content-Type: application/json
+
+{
+  "refreshToken": "your_refresh_token"
+}
+
 ###
 GET http://localhost:3000/api/users
 
@@ -7,13 +35,13 @@ POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "nationalId": "41094393",
-  "email": "mukiri.16030@students.kyu.ac.ke",
+  "nationalId": "34567",
+  "email": "mukiri@students.kyu.ac.ke",
   "firstname": "Simon",
   "middlename": "Noroge",
   "lastname": "Mukiri",
-  "username": "devsimon",
-  "phoneNumber": "0701234575",
+  "username": "devmm",
+  "phoneNumber": "0701256555",
   "location": "Nairobi"
 }
 

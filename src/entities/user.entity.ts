@@ -58,7 +58,7 @@ export class User {
   @Column()
   location!: string;
 
-  @Column("text", { nullable: true ,select: false})
+  @Column("text", { nullable: true,select: false })
   password!: string | null;
 
   // OAuth Identifiers
