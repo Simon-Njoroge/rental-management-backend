@@ -12,6 +12,16 @@ Content-Type: application/json
   "forceLogin": true
 }
 
+### login with google
+###
+POST http://localhost:3000/api/auth/google-login
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg4MjUwM2E1ZmQ1NmU5ZjczNGRmYmE1YzUwZDdiZjQ4ZGIyODRhZTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIxMDU4NjEzMTUyMDc3LXZkZG90cjY3dW1vN2RxMHV1cmY0ZG0xZG5sMDU4MjBiLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiMTA1ODYxMzE1MjA3Ny12ZGRvdHI2N3VtbzdkcTB1dXJmNGRtMWRubDA1ODIwYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwMTM5NzI0OTI2ODk3NDU5NDE4NCIsImVtYWlsIjoibXVraXJpc2ltb24yMkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmJmIjoxNzUxMDQwMDg0LCJuYW1lIjoiU0lNT04gTkpPUk9HRSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NKTUI4aU5mQmtlcmUwMXBuVDJyX0hCWXlINjFiWE1LTktPX3dOSXA3c19iODlWb2c9czk2LWMiLCJnaXZlbl9uYW1lIjoiU0lNT04iLCJmYW1pbHlfbmFtZSI6Ik5KT1JPR0UiLCJpYXQiOjE3NTEwNDAzODQsImV4cCI6MTc1MTA0Mzk4NCwianRpIjoiNWY1NmYxMWQ1NzYxOWVjYWM5NWIwYjNjZjU4Yjg3NWU5NTZmNDU4NCJ9.oevNcLBhvZu4qnSStMz71AbSO_R2yXAGVd_hh01DJjbVPu3HdGYDoyduOkBM72p3uecgDDZcjZTm2QIz-40jrVXJJ4hfGpowKXR2xH7jdpB0PG18JywjJF8f6yFxhrB1U1aFfUvsuGUlkIg_GzH1rlZIXaOgtkmo1BnLX1raDodybXFiQguMzdR8B1-dQgf7Cc5Xvj4pfiP2V9XnRNqosvAfdj8pNC7e4mW7frq2ftnQojd3ityoGBYQm2EGEQV0NYHqUN30Okx6ZBQoc7LFUUgfQooz4uRIIBq4kLQj6FjVbUa16oB6gzWqmKbz9RXFoY1ZmU2F-7OCxi2mQkJdwg"
+}
+
+
 ### logout
 
 ###
@@ -82,7 +92,8 @@ Content-Type: application/json
 ###############################################################
 ### get property by id
 ###
-GET http://localhost:3000/api/properties/60c72b2f9b1d4c001c8e4e3a
+GET http://localhost:3000/api/properties/d3ca6390-9c47-4fe5-bae9-1a656d9e8613
+
 ###
 PUT http://localhost:3000/api/properties/60c72b2f9b1d4c001c8e4e3a
 Content-Type: application/json

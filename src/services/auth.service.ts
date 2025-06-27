@@ -10,14 +10,68 @@ import { v4 as uuidv4 } from "uuid";
 import { LoginDto } from "../dtos/users/auth.dto";
 import jwt from "jsonwebtoken";
 import { sendNewSigninEmail } from "../utils/email/newsignin";
-// import  imail CreateSessionDto } from "../dtos/session/CreateSessionDto";
+import { AuthProvider } from "../entities/auth-provider.entity";
+import { OAuth2Client } from "google-auth-library";
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export class AuthService {
   private userRepository: Repository<User>;
   private sessionRepository: Repository<Session>;
+  private authProviderRepository: Repository<AuthProvider>;
  
   constructor() {
     this.userRepository = AppDataSource.getRepository(User);
     this.sessionRepository = AppDataSource.getRepository(Session);
+    this.authProviderRepository = AppDataSource.getRepository(AuthProvider);
+  }
+
+  //verify google token
+  async verifyGoogleToken(token: string): Promise<User> {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      throw createHttpError(401, "Invalid Google token");
+    }
+    const {sub:googleId, email, name,picture} = payload;
+
+    let authProvider = await this.authProviderRepository.findOne({
+      where: { providerId: googleId, provider: "google" },
+      relations: ["user"],
+    });
+    if(authProvider && authProvider.user) {
+      
+      return authProvider.user;
+    } 
+
+    // If no user found, create a new one
+    let user = await this.userRepository.findOne({
+      where: { email },
+      select: ["id", "email", "role", "isVerified"],
+    });
+    if (!user) {
+      user = this.userRepository.create({
+       firstname: name || "Google",
+        email,
+        isVerified: true,
+        profileImage: picture || "",
+      });
+     user.role = "user" as User["role"]; 
+     user = await this.userRepository.save(user);
+    }
+    authProvider = this.authProviderRepository.create({
+      provider: "google",
+      providerId: googleId,
+      user,
+    });
+    await this.authProviderRepository.save(authProvider);
+    Logger.info(`User ${user.email} logged in with Google. AuthProvider: ${authProvider.id}`);
+    //token generation
+ 
+    return user;
   }
 
   private generateTokens(

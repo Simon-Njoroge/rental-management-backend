@@ -51,3 +51,28 @@ export const refreshTokens = async (req: Request, res: Response): Promise<void> 
   }
 }
 
+// googleLogin function
+export const googleLogin = async (req: Request, res: Response): Promise<void> =>  {
+  const { token } = req.body || {};
+  if (!token) {
+    res.status(400).json({ success: false, message: "Missing token" });
+    return;
+  }
+
+ try{
+  const user = await authService.verifyGoogleToken(token);
+   res.json({
+    success:true,
+    message: "Google login successful",
+    user,
+  });
+  return;
+ } catch (error: any) {
+    res.status(error.status || 500).json({
+     success: false,
+     message: error.message || "Internal server error",
+   });
+   return;
+ }
+}
+
